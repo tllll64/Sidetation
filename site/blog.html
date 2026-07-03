@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Sidetation</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="logo" href="./index.html"><span class="logo-dot"></span>Sidetation</a>
+      <div class="nav-links">
+        <a href="./index.html#features">功能</a>
+        <a href="./index.html#install">安装</a>
+        <a href="./changelog.html">Changelog</a>
+        <a href="./blog.html">Blog</a>
+        <a class="gh" href="https://github.com/tllll64/Sidetation" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </nav>
+  </div>
+
+  <main class="page">
+    <h1>Blog</h1>
+    <p class="lead">关于视觉反馈、AI 协作与工具设计的思考。</p>
+
+    <article class="post">
+      <h3>为什么把「标注」升级为「直接操纵」</h3>
+      <div class="meta">2026-07-04 · Sidetation 团队</div>
+      <p>
+        给 AI 描述一个视觉问题，是一件效率很低的事：「按钮往左一点、再小一点、圆角大一些」——每一个词都是模糊的，AI
+        只能猜。agentation 解决了「定位」问题：点选元素生成精确选择器，AI 不用再猜你说的是哪个按钮。
+      </p>
+      <p>
+        但「改成什么样」仍然靠文字。Sidetation 的出发点是：设计师表达意图最自然的方式不是描述，而是动手——拖到那个位置、拉到那个大小、调到那个颜色。工具的职责是把这些动作忠实地翻译成结构化
+        diff：稳定选择器、before/after 盒模型、样式变更清单。
+      </p>
+      <p>
+        和 agentation 一样，我们坚持一个原则：不生成代码，只生成精确的上下文。位移的 transform
+        只是编辑器里的临时表现，真正的布局修改（margin、flex、gap）应该由拿着完整源码的 AI 来决定。所见即所得地表达，
+        让 AI 做它擅长的落地。
+      </p>
+    </article>
+
+    <article class="post coming">
+      <p>更多文章写作中——多选批量编辑的交互设计、DOM 快照缩略图的实现细节，敬请期待。</p>
+    </article>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="f-credit">
+        Sidetation · 思路致敬 <a href="https://www.agentation.com/" target="_blank" rel="noopener">agentation</a> · MIT License
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

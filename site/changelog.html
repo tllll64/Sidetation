@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog — Sidetation</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="logo" href="./index.html"><span class="logo-dot"></span>Sidetation</a>
+      <div class="nav-links">
+        <a href="./index.html#features">功能</a>
+        <a href="./index.html#install">安装</a>
+        <a href="./changelog.html">Changelog</a>
+        <a href="./blog.html">Blog</a>
+        <a class="gh" href="https://github.com/tllll64/Sidetation" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </nav>
+  </div>
+
+  <main class="page">
+    <h1>Changelog</h1>
+    <p class="lead">Sidetation 的每一次更新都记在这里。</p>
+
+    <div class="log-entry">
+      <span class="log-version">v0.4.0</span><span class="log-date">2026-07-04</span>
+      <h3>官网、快照缩略图与文字编辑</h3>
+      <ul>
+        <li>工具介绍官网上线（就是你现在看到的这个）</li>
+        <li>修改列表每条记录新增「优化前 → 优化后」快照缩略图，原生 SVG foreignObject 实现</li>
+        <li>双击纯文本元素进入行内文字编辑，改动进撤销栈与导出记录</li>
+        <li>快捷键收敛为工具栏 ⌘ 按钮，hover 展示完整速查面板</li>
+        <li>属性面板改为视口垂直居中展示</li>
+        <li>撤销栈支持批量动作（为多选批量编辑铺路）</li>
+      </ul>
+    </div>
+
+    <div class="log-entry">
+      <span class="log-version">v0.3.0</span><span class="log-date">2026-07-03</span>
+      <h3>Figma 式属性面板</h3>
+      <ul>
+        <li>悬浮属性面板：Auto layout（flex 方向 / 对齐九宫格 / gap）、Fill、Stroke、圆角、透明度</li>
+        <li>Padding 支持双值 / 四边独立两种模式，自动识别不对称 padding</li>
+        <li>面板改动与拖拽缩放同源：进撤销栈、进修改记录、进双格式导出</li>
+      </ul>
+    </div>
+
+    <div class="log-entry">
+      <span class="log-version">v0.2.0</span><span class="log-date">2026-07-03</span>
+      <h3>Figma 基础快捷键与任意网站注入</h3>
+      <ul>
+        <li>全局 undo / redo 栈（⌘Z / ⌘⇧Z），连续微调自动合并为一步</li>
+        <li>Delete 删除元素、Enter / Shift+Enter 下钻上钻、Tab 切换兄弟元素</li>
+        <li>Shift 等比缩放扩展到边手柄</li>
+        <li>拖回原位的零位移记录自动过滤</li>
+        <li>新增 console-paste.js 与 bookmarklet，可注入任意网站测试</li>
+        <li>兼容 Trusted Types 严格站点（全量移除 innerHTML）</li>
+      </ul>
+    </div>
+
+    <div class="log-entry">
+      <span class="log-version">v0.1.0</span><span class="log-date">2026-07-03</span>
+      <h3>MVP 首发</h3>
+      <ul>
+        <li>点选元素：hover 高亮、点击选中、子元素下钻、Alt+点击选父级</li>
+        <li>拖拽移动：transform 位移 + Figma 式对齐吸附参考线</li>
+        <li>8 手柄缩放，content-box 自动补偿</li>
+        <li>方向键微调、编辑历史面板、单条撤销</li>
+        <li>双格式导出：结构化 Markdown（给 AI agent）与可直接粘贴的 CSS</li>
+        <li>稳定选择器生成，过滤 CSS-in-JS 哈希类名</li>
+      </ul>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="f-credit">
+        Sidetation · 思路致敬 <a href="https://www.agentation.com/" target="_blank" rel="noopener">agentation</a> · MIT License
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

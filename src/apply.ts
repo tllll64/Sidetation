@@ -44,4 +44,10 @@ export function applyRecord(rec: EditRecord): void {
     if (k in rec.props) el.style.setProperty(k, rec.props[k]);
     else restoreProp(el, k, rec.savedProps[k] ?? '');
   }
+
+  // text (pure-text elements only); never while the user is typing in it
+  if (rec.savedText !== null && !el.hasAttribute('contenteditable')) {
+    const want = rec.text ?? rec.savedText;
+    if (el.textContent !== want) el.textContent = want;
+  }
 }

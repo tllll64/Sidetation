@@ -39,6 +39,15 @@ export function toMarkdown(records: EditRecord[]): string {
         `- 尺寸：${r(rec.startSize.w)}×${r(rec.startSize.h)} → ${r(rec.size.w)}×${r(rec.size.h)}`
       );
     }
+    const props = Object.entries(rec.props);
+    if (props.length) {
+      lines.push(`- 样式：${props.map(([k, v]) => `\`${k}: ${v}\``).join('，')}`);
+    }
+    if (rec.text !== null) {
+      const clip = (s: string | null): string =>
+        (s ?? '').trim().replace(/\s+/g, ' ').slice(0, 80);
+      lines.push(`- 文字："${clip(rec.savedText)}" → "${clip(rec.text)}"`);
+    }
     lines.push(`- 原始盒（页面坐标）：x ${r(o.x)}，y ${r(o.y)}，w ${r(o.w)}，h ${r(o.h)}`);
     lines.push(`- 修改后：x ${r(cur.x)}，y ${r(cur.y)}，w ${r(cur.w)}，h ${r(cur.h)}`);
     lines.push('');
@@ -64,6 +73,7 @@ export function toCSS(records: EditRecord[]): string {
         props.push(`  width: ${r(rec.size.w - rec.sizeAdj.w)}px;`);
         props.push(`  height: ${r(rec.size.h - rec.sizeAdj.h)}px;`);
       }
+      for (const [k, v] of Object.entries(rec.props)) props.push(`  ${k}: ${v};`);
     }
     const note = `/* ${rec.tag}: ${r(rec.startSize.w)}×${r(rec.startSize.h)} @ (${r(
       rec.originalRect.x

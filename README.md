@@ -36,8 +36,12 @@ if (import.meta.env.DEV) {
 - **点选元素**：hover 高亮，点击选中；点击子元素下钻，`Alt+点击` 上钻到父级
 - **拖拽移动**：`transform: translate` 位移，不破坏文档流；自动吸附兄弟/父元素的边缘与中线（Figma 式参考线）
 - **拉伸缩放**：8 手柄，`Shift` 锁比例，自动处理 `content-box` 的补偿
-- **键盘微调**：方向键 1px，`Shift+方向键` 10px，`Esc` 取消选中/退出
-- **编辑历史**：每个元素一条记录，可单条撤销或全部重置
+- **属性面板**（Figma 风格悬浮面板，选中即出现）：
+  - Auto layout：Flow（none/column/row/wrap）、W/H、九宫格对齐、Gap、Padding、Clip content
+  - Appearance：不透明度、圆角
+  - Fill：背景色 + 透明度；Stroke：描边色 + 粗细
+- **快捷键**（Figma 同款）：`Delete` 删除元素、`⌘Z / ⌘⇧Z` 撤销重做、`Enter / Shift+Enter` 下钻/上钻、`Tab / Shift+Tab` 兄弟元素切换、方向键微调（`Shift` ×10）、`Esc` 取消/退出
+- **编辑历史**：手势级 undo/redo 栈（同字段连续修改自动合并为一步），面板可单条还原或全部重置；每条记录带「优化前 → 优化后」DOM 快照缩略图（原生 SVG foreignObject 实现，无第三方依赖）
 
 ## 导出格式
 

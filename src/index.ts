@@ -2,6 +2,7 @@ import type { EditRecord, SidetationOptions, Snapshot } from './types';
 import { Overlay, type Dir } from './overlay';
 import { History } from './history';
 import { Toolbar } from './toolbar';
+import { PropsPanel } from './props-panel';
 import { computeSnap } from './snap';
 import { shortLabel } from './selector';
 import { toMarkdown, toCSS } from './export';
@@ -23,6 +24,13 @@ interface DragState {
   downTarget: HTMLElement;
 }
 
+interface TextEditState {
+  el: HTMLElement;
+  rec: EditRecord;
+  before: Snapshot;
+  savedUserSelect: string;
+}
+
 interface ResizeState {
   rec: EditRecord;
   before: Snapshot;
@@ -39,6 +47,7 @@ export class Sidetation {
   private overlay = new Overlay();
   private history = new History();
   private toolbar: Toolbar;
+  private propsPanel: PropsPanel;
   private opts: Required<SidetationOptions>;
 
   private active = false;
@@ -46,17 +55,24 @@ export class Sidetation {
   private selected: HTMLElement | null = null;
   private drag: DragState | null = null;
   private resize: ResizeState | null = null;
+  private textEdit: TextEditState | null = null;
+  private lastDownAt = 0;
+  private lastDownTarget: HTMLElement | null = null;
   private rafId = 0;
   private savedUserSelect = '';
 
   constructor(options: SidetationOptions = {}) {
     this.opts = { autoStart: false, snapThreshold: 6, ...options };
-    this.toolbar = new Toolbar(this.overlay.toolbarEl, this.overlay.panelEl, {
+    this.toolbar = new Toolbar(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
       onToggle: () => (this.active ? this.deactivate() : this.activate()),
       onCopyMd: () => this.copy(toMarkdown(this.history.all()), '已复制 Markdown'),
       onCopyCss: () => this.copy(toCSS(this.history.all()), '已复制 CSS'),
       onReset: () => this.history.resetAll(),
       onRevert: (id) => this.history.revert(id),
+    });
+    this.propsPanel = new PropsPanel(this.overlay.propsEl, {
+      setProps: (entries) => this.panelSetProps(entries),
+      setSize: (w, h) => this.panelSetSize(w, h),
     });
     this.history.onChange = () => this.syncUI();
     this.overlay.onHandleDown = (dir, e) => this.startResize(dir, e);
@@ -83,6 +99,7 @@ export class Sidetation {
 
   deactivate(): void {
     if (!this.active) return;
+    this.commitTextEdit();
     this.active = false;
     document.documentElement.style.userSelect = this.savedUserSelect;
     document.documentElement.style.cursor = '';
@@ -97,6 +114,7 @@ export class Sidetation {
     this.selected = null;
     this.drag = null;
     this.resize = null;
+    this.propsPanel.setTarget(null);
     this.overlay.setHover(null);
     this.overlay.setSelection(null);
     this.overlay.setGuides(null, null);
@@ -114,7 +132,9 @@ export class Sidetation {
   /** keep boxes glued to their elements through scroll/layout changes */
   private loop = (): void => {
     if (this.selected && this.selected.isConnected) {
-      this.overlay.setSelection(this.selected.getBoundingClientRect(), this.selectionLabel());
+      const rect = this.selected.getBoundingClientRect();
+      this.overlay.setSelection(rect, this.selectionLabel());
+      this.propsPanel.refreshRect(rect);
     } else {
       if (this.selected) this.selected = null;
       this.overlay.setSelection(null);
@@ -151,6 +171,7 @@ export class Sidetation {
   private select(el: HTMLElement | null): void {
     this.selected = el;
     this.hovered = null;
+    this.propsPanel.setTarget(el);
   }
 
   private isSelectable(el: Element | null): el is HTMLElement {
@@ -182,6 +203,15 @@ export class Sidetation {
 
   private onPointerDown = (e: PointerEvent): void => {
     if (this.inOverlay(e)) return; // toolbar / panel / handles handle themselves
+
+    // while editing text: clicks inside stay native (caret placement),
+    // clicking anywhere else commits the edit and falls through
+    if (this.textEdit) {
+      const path = e.composedPath();
+      if (path.includes(this.textEdit.el)) return;
+      this.commitTextEdit();
+    }
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -196,6 +226,16 @@ export class Sidetation {
       this.select(null);
       return;
     }
+
+    // double-click (own detection: native click events are suppressed)
+    const now = Date.now();
+    if (target === this.lastDownTarget && now - this.lastDownAt < 400) {
+      this.lastDownAt = 0;
+      this.startTextEdit(target);
+      return;
+    }
+    this.lastDownAt = now;
+    this.lastDownTarget = target;
 
     const withinSelection =
       this.selected !== null && (target === this.selected || this.selected.contains(target));
@@ -242,9 +282,49 @@ export class Sidetation {
 
   private blockEvent = (e: Event): void => {
     if (this.inOverlay(e)) return;
+    if (this.textEdit && e.composedPath().includes(this.textEdit.el)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
   };
+
+  // ---------- text editing ----------
+
+  private startTextEdit(el: HTMLElement): void {
+    if (el.childElementCount > 0 || !(el.textContent ?? '').trim()) {
+      this.overlay.toast('仅支持纯文本元素（无子元素）');
+      return;
+    }
+    this.select(el);
+    const rec = this.history.ensure(el);
+    this.textEdit = {
+      el,
+      rec,
+      before: this.history.snapshot(rec),
+      savedUserSelect: el.style.getPropertyValue('user-select'),
+    };
+    el.setAttribute('contenteditable', 'plaintext-only');
+    if (!el.isContentEditable) el.setAttribute('contenteditable', 'true');
+    el.style.setProperty('user-select', 'text'); // page-wide user-select:none would block the caret
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }
+
+  private commitTextEdit(): void {
+    const t = this.textEdit;
+    if (!t) return;
+    this.textEdit = null;
+    t.el.removeAttribute('contenteditable');
+    if (t.savedUserSelect) t.el.style.setProperty('user-select', t.savedUserSelect);
+    else t.el.style.removeProperty('user-select');
+    window.getSelection()?.removeAllRanges();
+    const newText = t.el.textContent ?? '';
+    t.rec.text = newText === t.rec.savedText ? null : newText;
+    this.history.commit(t.rec, t.before);
+  }
 
   // ---------- drag ----------
 
@@ -342,6 +422,19 @@ export class Sidetation {
   // ---------- keyboard (Figma-style) ----------
 
   private onKeyDown = (e: KeyboardEvent): void => {
+    // typing in the props panel (or toolbar) must not trigger page shortcuts:
+    // Backspace there edits a field, not the element
+    if (this.inOverlay(e)) return;
+
+    // while editing text, everything is native except Esc (= finish editing)
+    if (this.textEdit) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.commitTextEdit();
+      }
+      return;
+    }
     const mod = e.metaKey || e.ctrlKey;
 
     if (e.key === 'Escape') {
@@ -415,8 +508,37 @@ export class Sidetation {
     rec.dx += delta[0];
     rec.dy += delta[1];
     rec.moved = true;
-    this.history.commit(rec, before, { coalesce: true });
+    this.history.commit(rec, before, { coalesce: 'nudge' });
   };
+
+  // ---------- properties panel ----------
+
+  private panelSetProps(entries: Record<string, string | null>): void {
+    if (!this.selected) return;
+    this.commitTextEdit();
+    const rec = this.history.ensure(this.selected);
+    const before = this.history.snapshot(rec);
+    for (const [prop, value] of Object.entries(entries)) {
+      if (!(prop in rec.savedProps)) {
+        rec.savedProps[prop] = this.selected.style.getPropertyValue(prop);
+      }
+      if (value === null) delete rec.props[prop];
+      else rec.props[prop] = value;
+    }
+    // coalesce rapid changes of the same field, but never across fields
+    this.history.commit(rec, before, { coalesce: `props:${Object.keys(entries).sort().join(',')}` });
+  }
+
+  private panelSetSize(w: number | null, h: number | null): void {
+    if (!this.selected) return;
+    this.commitTextEdit();
+    const rec = this.history.ensure(this.selected);
+    const before = this.history.snapshot(rec);
+    if (w !== null) rec.size.w = Math.max(8, w);
+    if (h !== null) rec.size.h = Math.max(8, h);
+    rec.resized = true;
+    this.history.commit(rec, before, { coalesce: 'size' });
+  }
 
   // ---------- output ----------
 
@@ -461,6 +583,7 @@ export class Sidetation {
   private syncUI(): void {
     this.history.prune();
     this.toolbar.update(this.active, this.history.all());
+    this.propsPanel.sync();
   }
 }
 

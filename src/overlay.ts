@@ -19,6 +19,8 @@ export class Overlay {
   private toastEl: HTMLElement;
   readonly toolbarEl: HTMLElement;
   readonly panelEl: HTMLElement;
+  readonly propsEl: HTMLElement;
+  readonly shortcutsEl: HTMLElement;
   onHandleDown: ((dir: Dir, e: PointerEvent) => void) | null = null;
   private toastTimer = 0;
 
@@ -58,6 +60,8 @@ export class Overlay {
     this.guideV = div('guide guide-v');
     this.guideH = div('guide guide-h');
     this.panelEl = div('panel');
+    this.propsEl = div('props');
+    this.shortcutsEl = div('shortcuts');
     this.toolbarEl = div('toolbar');
     this.toastEl = div('toast');
 

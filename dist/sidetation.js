@@ -1,4 +1,4 @@
-const T = `
+const Y = `
 :host {
   all: initial;
 }
@@ -130,11 +130,61 @@ const T = `
   background: rgba(255, 255, 255, 0.12);
   margin: 0 2px;
 }
-.hint {
-  color: rgba(255, 255, 255, 0.45);
+.kbd-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 9px;
+}
+.kbd-btn svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- shortcuts cheat-sheet (hover popover) ---- */
+.shortcuts {
+  position: fixed;
+  transform: translateX(-50%);
+  width: 300px;
+  display: none;
+  background: #1c1e26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  padding: 12px 14px;
+  pointer-events: none;
+  z-index: 12;
+}
+.shortcuts.open { display: block; }
+.shortcuts-title {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.shortcut-row:last-child { margin-bottom: 0; }
+.kbd {
+  flex-shrink: 0;
+  min-width: 108px;
+  background: #12141b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  color: #e8eaf0;
   font-size: 11px;
-  padding: 0 8px 0 2px;
-  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 3px 7px;
+  text-align: center;
+}
+.shortcut-desc {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
 }
 
 /* ---- edits panel ---- */
@@ -143,7 +193,7 @@ const T = `
   left: 50%;
   bottom: 66px;
   transform: translateX(-50%);
-  width: 400px;
+  width: 480px;
   max-width: calc(100vw - 32px);
   max-height: 320px;
   overflow-y: auto;
@@ -165,6 +215,45 @@ const T = `
   border-radius: 8px;
 }
 .edit-row:hover { background: rgba(255, 255, 255, 0.05); }
+.edit-thumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    #12141b;
+  background-size: 10px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.thumb.deleted {
+  color: #e8583f;
+  font-size: 14px;
+  border-style: dashed;
+}
+.thumb.empty {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+.thumb-arrow {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+}
 .edit-info { flex: 1; min-width: 0; }
 .edit-sel {
   color: #8fb4ff;
@@ -198,6 +287,151 @@ const T = `
   padding: 20px 0;
 }
 
+/* ---- properties panel ---- */
+.props {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 232px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  display: none;
+  background: #1c1e26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  z-index: 8;
+  color: #e8eaf0;
+  padding: 2px 0 6px;
+}
+.props.open { display: block; }
+.props-section {
+  padding: 10px 12px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.props-section:first-of-type { border-top: none; }
+.props-title {
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.props-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.props-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  width: 56px;
+  flex-shrink: 0;
+}
+.props input[type="number"] {
+  width: 100%;
+  min-width: 0;
+  background: #12141b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  padding: 5px 7px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.props input[type="number"]:focus { border-color: #4f8cff; }
+.props input[type="color"] {
+  width: 28px;
+  height: 26px;
+  padding: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.seg {
+  flex: 1;
+  display: flex;
+  background: #12141b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg button {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.seg button.on { background: #4f8cff; color: #fff; }
+.align-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  grid-auto-rows: 20px;
+  gap: 2px;
+  background: #12141b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.align-grid button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+.align-grid button::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+.align-grid button.on { background: rgba(79, 140, 255, 0.25); }
+.align-grid button.on::after { background: #4f8cff; inset: 5px; }
+.props .disabled { opacity: 0.35; pointer-events: none; }
+.pad-toggle {
+  appearance: none;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  background: #12141b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  cursor: pointer;
+}
+.pad-toggle:hover { color: #fff; }
+.pad-toggle.on { background: #4f8cff; color: #fff; border-color: #4f8cff; }
+.pad-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.props .check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+}
+.props .check input { accent-color: #4f8cff; }
+
 /* ---- toast ---- */
 .toast {
   position: fixed;
@@ -219,8 +453,8 @@ const T = `
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-`, B = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
-class R {
+`, U = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+class G {
   constructor() {
     this.host = document.createElement("div"), this.onHandleDown = null, this.toastTimer = 0, this.host.setAttribute("data-sidetation", ""), Object.assign(this.host.style, {
       position: "fixed",
@@ -229,20 +463,20 @@ class R {
       pointerEvents: "none"
     });
     const t = this.host.attachShadow({ mode: "open" }), e = document.createElement("style");
-    e.textContent = T, t.append(e);
-    const s = (i) => {
-      const o = document.createElement("div");
-      return o.className = i, t.append(o), o;
+    e.textContent = Y, t.append(e);
+    const s = (n) => {
+      const i = document.createElement("div");
+      return i.className = n, t.append(i), i;
     };
     this.hoverBox = s("hover-box"), this.selBox = s("sel-box"), this.selLabel = document.createElement("div"), this.selLabel.className = "sel-label", this.selBox.append(this.selLabel);
-    for (const i of B) {
-      const o = document.createElement("div");
-      o.className = "handle", o.dataset.dir = i, o.addEventListener("pointerdown", (r) => {
-        var a;
-        return (a = this.onHandleDown) == null ? void 0 : a.call(this, i, r);
-      }), this.selBox.append(o);
+    for (const n of U) {
+      const i = document.createElement("div");
+      i.className = "handle", i.dataset.dir = n, i.addEventListener("pointerdown", (a) => {
+        var r;
+        return (r = this.onHandleDown) == null ? void 0 : r.call(this, n, a);
+      }), this.selBox.append(i);
     }
-    this.guideV = s("guide guide-v"), this.guideH = s("guide guide-h"), this.panelEl = s("panel"), this.toolbarEl = s("toolbar"), this.toastEl = s("toast"), document.documentElement.appendChild(this.host);
+    this.guideV = s("guide guide-v"), this.guideH = s("guide guide-h"), this.panelEl = s("panel"), this.propsEl = s("props"), this.shortcutsEl = s("shortcuts"), this.toolbarEl = s("toolbar"), this.toastEl = s("toast"), document.documentElement.appendChild(this.host);
   }
   place(t, e) {
     if (!e) {
@@ -267,102 +501,189 @@ class R {
     clearTimeout(this.toastTimer), this.host.remove();
   }
 }
-const A = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, H = ["data-testid", "data-test", "data-cy"];
-function P(n) {
-  return Array.from(n.classList).filter((t) => t.length <= 24 && !A.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
+const V = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, K = ["data-testid", "data-test", "data-cy"];
+function H(o) {
+  return Array.from(o.classList).filter((t) => t.length <= 24 && !V.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
 }
-function b(n) {
-  return !n.id || /\d{3,}/.test(n.id) || /^[0-9a-f-]{8,}$/i.test(n.id) ? null : n.id;
+function R(o) {
+  return !o.id || /\d{3,}/.test(o.id) || /^[0-9a-f-]{8,}$/i.test(o.id) ? null : o.id;
 }
-function $(n) {
-  const t = n.tagName.toLowerCase();
-  for (const s of H) {
-    const i = n.getAttribute(s);
-    if (i) return `${t}[${s}="${i}"]`;
+function D(o) {
+  const t = o.tagName.toLowerCase();
+  for (const s of K) {
+    const n = o.getAttribute(s);
+    if (n) return `${t}[${s}="${n}"]`;
   }
-  const e = P(n).map((s) => `.${CSS.escape(s)}`).join("");
+  const e = H(o).map((s) => `.${CSS.escape(s)}`).join("");
   return t + e;
 }
-function y(n, t) {
+function $(o, t) {
   try {
-    const e = document.querySelectorAll(n);
+    const e = document.querySelectorAll(o);
     return e.length === 1 && e[0] === t;
   } catch {
     return !1;
   }
 }
-function M(n) {
-  const t = b(n);
+function _(o) {
+  const t = R(o);
   if (t) {
-    const o = `#${CSS.escape(t)}`;
-    if (y(o, n)) return o;
+    const i = `#${CSS.escape(t)}`;
+    if ($(i, o)) return i;
   }
   const e = [];
-  let s = n;
+  let s = o;
   for (; s && s !== document.body && s !== document.documentElement && e.length < 5; ) {
-    const o = b(s);
-    if (o && s !== n) {
-      e.unshift(`#${CSS.escape(o)}`);
-      const a = e.join(" > ");
-      if (y(a, n)) return a;
+    const i = R(s);
+    if (i && s !== o) {
+      e.unshift(`#${CSS.escape(i)}`);
+      const r = e.join(" > ");
+      if ($(r, o)) return r;
       break;
     }
-    e.unshift($(s));
-    const r = e.join(" > ");
-    if (y(r, n)) return r;
+    e.unshift(D(s));
+    const a = e.join(" > ");
+    if ($(a, o)) return a;
     s = s.parentElement;
   }
-  const i = n.parentElement;
-  if (i) {
-    const r = Array.from(i.children).filter((l) => l.tagName === n.tagName).indexOf(n) + 1, a = [...e.slice(0, -1), `${$(n)}:nth-of-type(${r})`].join(" > ");
-    return y(a, n), a;
+  const n = o.parentElement;
+  if (n) {
+    const a = Array.from(n.children).filter((l) => l.tagName === o.tagName).indexOf(o) + 1, r = [...e.slice(0, -1), `${D(o)}:nth-of-type(${a})`].join(" > ");
+    return $(r, o), r;
   }
   return e.join(" > ");
 }
-function j(n) {
-  const t = n.tagName.toLowerCase(), e = b(n);
+function q(o) {
+  const t = o.tagName.toLowerCase(), e = R(o);
   if (e) return `${t}#${e}`;
-  const s = P(n);
+  const s = H(o);
   return s.length ? `${t}.${s[0]}` : t;
 }
-function x(n, t, e) {
-  e ? n.style.setProperty(t, e) : n.style.removeProperty(t);
+function E(o, t, e) {
+  e ? o.style.setProperty(t, e) : o.style.removeProperty(t);
 }
-function v(n) {
-  const { el: t, savedInline: e } = n;
-  if (n.deleted ? t.style.display = "none" : n.resized && n.baseDisplay === "inline" ? t.style.display = "inline-block" : x(t, "display", e.display), n.moved && (n.dx !== 0 || n.dy !== 0)) {
-    const s = `translate(${n.dx}px, ${n.dy}px)`;
-    t.style.transform = n.baseTransform === "none" ? s : `${s} ${n.baseTransform}`;
+function P(o) {
+  const { el: t, savedInline: e } = o;
+  if (o.deleted ? t.style.display = "none" : o.resized && o.baseDisplay === "inline" ? t.style.display = "inline-block" : E(t, "display", e.display), o.moved && (o.dx !== 0 || o.dy !== 0)) {
+    const n = `translate(${o.dx}px, ${o.dy}px)`;
+    t.style.transform = o.baseTransform === "none" ? n : `${n} ${o.baseTransform}`;
   } else
-    x(t, "transform", e.transform);
-  n.resized ? (t.style.width = `${n.size.w - n.sizeAdj.w}px`, t.style.height = `${n.size.h - n.sizeAdj.h}px`) : (x(t, "width", e.width), x(t, "height", e.height));
+    E(t, "transform", e.transform);
+  o.resized ? (t.style.width = `${o.size.w - o.sizeAdj.w}px`, t.style.height = `${o.size.h - o.sizeAdj.h}px`) : (E(t, "width", e.width), E(t, "height", e.height));
+  const s = /* @__PURE__ */ new Set([...Object.keys(o.savedProps), ...Object.keys(o.props)]);
+  for (const n of s)
+    n in o.props ? t.style.setProperty(n, o.props[n]) : E(t, n, o.savedProps[n] ?? "");
+  if (o.savedText !== null && !t.hasAttribute("contenteditable")) {
+    const n = o.text ?? o.savedText;
+    t.textContent !== n && (t.textContent = n);
+  }
 }
-const I = 800;
-function k(n) {
-  return !n.moved && !n.resized && !n.deleted;
+const Z = [
+  "display",
+  "position",
+  "flex-direction",
+  "flex-wrap",
+  "flex",
+  "justify-content",
+  "align-items",
+  "align-self",
+  "order",
+  "gap",
+  "grid-template-columns",
+  "width",
+  "height",
+  "box-sizing",
+  "padding",
+  "margin",
+  "border-width",
+  "border-style",
+  "border-color",
+  "border-radius",
+  "background-color",
+  "background-image",
+  "background-size",
+  "background-position",
+  "background-repeat",
+  "color",
+  "font-family",
+  "font-size",
+  "font-weight",
+  "font-style",
+  "line-height",
+  "text-align",
+  "text-decoration",
+  "letter-spacing",
+  "white-space",
+  "vertical-align",
+  "list-style",
+  "overflow",
+  "opacity",
+  "box-shadow",
+  "transform",
+  "object-fit"
+], J = 120;
+function F(o, t, e) {
+  if (e.n++ > J) {
+    t.replaceChildren();
+    return;
+  }
+  const s = getComputedStyle(o);
+  let n = "";
+  for (const r of Z) n += `${r}:${s.getPropertyValue(r)};`;
+  t.setAttribute("style", n);
+  const i = Array.from(o.children), a = Array.from(t.children);
+  for (let r = 0; r < a.length; r++) {
+    const l = a[r].tagName.toLowerCase();
+    if (l === "script" || l === "iframe" || l === "video" || l === "canvas") {
+      a[r].remove();
+      continue;
+    }
+    F(i[r], a[r], e);
+  }
 }
-function N(n, t) {
-  return n.dx === t.dx && n.dy === t.dy && n.size.w === t.size.w && n.size.h === t.size.h && n.moved === t.moved && n.resized === t.resized && n.deleted === t.deleted;
+function X(o) {
+  const t = o.getBoundingClientRect();
+  if (t.width < 1 || t.height < 1) return null;
+  try {
+    const e = o.cloneNode(!0);
+    F(o, e, { n: 0 }), e.style.margin = "0", e.style.transform = "none", e.style.maxWidth = "none", e.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    const s = new XMLSerializer().serializeToString(e), n = Math.ceil(t.width), i = Math.ceil(t.height), a = `<svg xmlns="http://www.w3.org/2000/svg" width="${n}" height="${i}"><foreignObject width="100%" height="100%">${s}</foreignObject></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(a)}`;
+  } catch {
+    return null;
+  }
 }
-const X = {
+const Q = 800;
+function I(o) {
+  return !o.moved && !o.resized && !o.deleted && Object.keys(o.props).length === 0 && o.text === null;
+}
+function tt(o, t) {
+  const e = Object.keys(o);
+  return e.length === Object.keys(t).length && e.every((s) => o[s] === t[s]);
+}
+function et(o, t) {
+  return o.dx === t.dx && o.dy === t.dy && o.size.w === t.size.w && o.size.h === t.size.h && o.moved === t.moved && o.resized === t.resized && o.deleted === t.deleted && o.text === t.text && tt(o.props, t.props);
+}
+const st = {
   dx: 0,
   dy: 0,
   moved: !1,
   resized: !1,
-  deleted: !1
+  deleted: !1,
+  text: null
 };
-class Y {
+class nt {
   constructor() {
     this.records = /* @__PURE__ */ new Map(), this.undoStack = [], this.redoStack = [], this.seq = 1, this.onChange = null;
   }
   ensure(t) {
     let e = this.records.get(t);
     if (e) return e;
-    const s = t.getBoundingClientRect(), i = getComputedStyle(t), o = i.boxSizing === "content-box", r = (a) => parseFloat(a) || 0;
+    const s = t.getBoundingClientRect(), n = getComputedStyle(t), i = n.boxSizing === "content-box", a = (r) => parseFloat(r) || 0;
     return e = {
       id: this.seq++,
       el: t,
-      selector: M(t),
+      selector: _(t),
       tag: t.tagName.toLowerCase(),
       originalRect: {
         x: s.left + window.scrollX,
@@ -376,11 +697,11 @@ class Y {
         height: t.style.getPropertyValue("height"),
         display: t.style.getPropertyValue("display")
       },
-      baseTransform: i.transform,
-      baseDisplay: i.display,
-      sizeAdj: o ? {
-        w: r(i.paddingLeft) + r(i.paddingRight) + r(i.borderLeftWidth) + r(i.borderRightWidth),
-        h: r(i.paddingTop) + r(i.paddingBottom) + r(i.borderTopWidth) + r(i.borderBottomWidth)
+      baseTransform: n.transform,
+      baseDisplay: n.display,
+      sizeAdj: i ? {
+        w: a(n.paddingLeft) + a(n.paddingRight) + a(n.borderLeftWidth) + a(n.borderRightWidth),
+        h: a(n.paddingTop) + a(n.paddingBottom) + a(n.borderTopWidth) + a(n.borderBottomWidth)
       } : { w: 0, h: 0 },
       dx: 0,
       dy: 0,
@@ -388,7 +709,13 @@ class Y {
       resized: !1,
       deleted: !1,
       startSize: { w: s.width, h: s.height },
-      size: { w: s.width, h: s.height }
+      size: { w: s.width, h: s.height },
+      beforeSnap: X(t),
+      // captured pre-edit: this IS the "before"
+      savedText: t.childElementCount === 0 ? t.textContent : null,
+      text: null,
+      props: {},
+      savedProps: {}
     }, this.records.set(t, e), e;
   }
   get(t) {
@@ -404,38 +731,50 @@ class Y {
       size: { ...t.size },
       moved: t.moved,
       resized: t.resized,
-      deleted: t.deleted
+      deleted: t.deleted,
+      props: { ...t.props },
+      text: t.text
     };
   }
-  /** finish a gesture: normalize, push onto the undo stack, re-render */
+  /** finish a single-element gesture */
   commit(t, e, s) {
-    t.dx === 0 && t.dy === 0 && (t.moved = !1), v(t);
-    const i = this.snapshot(t);
-    if (N(e, i)) {
-      this.cleanup(t), this.emit();
+    this.commitBatch([{ rec: t, before: e }], s);
+  }
+  /** finish a (possibly multi-select) gesture as ONE undo step */
+  commitBatch(t, e) {
+    const s = [];
+    for (const { rec: r, before: l } of t) {
+      r.dx === 0 && r.dy === 0 && (r.moved = !1), P(r);
+      const d = this.snapshot(r);
+      et(l, d) || s.push({ rec: r, before: l, after: d }), this.cleanup(r);
+    }
+    if (s.length === 0) {
+      this.emit();
       return;
     }
-    const o = this.undoStack[this.undoStack.length - 1];
-    s != null && s.coalesce && (o != null && o.coalesce) && o.rec === t && Date.now() - o.at < I ? (o.after = i, o.at = Date.now()) : this.undoStack.push({ rec: t, before: e, after: i, coalesce: !!(s != null && s.coalesce), at: Date.now() }), this.redoStack.length = 0, this.cleanup(t), this.emit();
+    const n = (e == null ? void 0 : e.coalesce) ?? null, i = this.undoStack[this.undoStack.length - 1];
+    n !== null && i !== void 0 && i.coalesce === n && Date.now() - i.at < Q && i.entries.length === s.length && i.entries.every((r, l) => r.rec === s[l].rec) ? (s.forEach((r, l) => i.entries[l].after = r.after), i.at = Date.now()) : this.undoStack.push({ entries: s, coalesce: n, at: Date.now() }), this.redoStack.length = 0, this.emit();
   }
   undo() {
     const t = this.undoStack.pop();
-    return t ? (this.applySnap(t.rec, t.before), this.redoStack.push(t), this.emit(), !0) : !1;
+    if (!t) return !1;
+    for (const e of t.entries) this.applySnap(e.rec, e.before);
+    return this.redoStack.push(t), this.emit(), !0;
   }
   redo() {
     const t = this.redoStack.pop();
-    return t ? (this.applySnap(t.rec, t.after), this.undoStack.push(t), this.emit(), !0) : !1;
+    if (!t) return !1;
+    for (const e of t.entries) this.applySnap(e.rec, e.after);
+    return this.undoStack.push(t), this.emit(), !0;
   }
   /** panel revert: back to pristine, as an undoable action */
   revert(t) {
-    const e = this.all().find((i) => i.id === t);
+    const e = this.all().find((n) => n.id === t);
     if (!e) return;
     const s = this.snapshot(e);
-    this.applySnap(e, { ...X, size: { ...e.startSize } }), this.undoStack.push({
-      rec: e,
-      before: s,
-      after: this.snapshot(e),
-      coalesce: !1,
+    this.applySnap(e, { ...st, size: { ...e.startSize }, props: {} }), this.undoStack.push({
+      entries: [{ rec: e, before: s, after: this.snapshot(e) }],
+      coalesce: null,
       at: Date.now()
     }), this.redoStack.length = 0, this.emit();
   }
@@ -443,44 +782,96 @@ class Y {
     for (const t of this.all()) this.revert(t.id);
   }
   applySnap(t, e) {
-    t.dx = e.dx, t.dy = e.dy, t.size = { ...e.size }, t.moved = e.moved, t.resized = e.resized, t.deleted = e.deleted, v(t), this.cleanup(t);
+    t.dx = e.dx, t.dy = e.dy, t.size = { ...e.size }, t.moved = e.moved, t.resized = e.resized, t.deleted = e.deleted, t.props = { ...e.props }, t.text = e.text, P(t), this.cleanup(t);
   }
   /** keep the consolidated map in sync: pristine records drop out, edited ones stay */
   cleanup(t) {
-    k(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
+    I(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
   }
   /** drop records that were ensure()d but never turned into a real edit */
   prune() {
     for (const [t, e] of this.records)
-      k(e) && this.records.delete(t);
+      I(e) && this.records.delete(t);
   }
   emit() {
     var t;
     (t = this.onChange) == null || t.call(this);
   }
 }
-const m = Math.round;
-class O {
-  constructor(t, e, s) {
-    this.panel = e, this.cb = s, this.panelOpen = !1, this.records = [];
+const b = Math.round, ot = [
+  ["点击", "选中元素，点子元素可下钻"],
+  ["双击", "编辑文字内容（纯文本元素）"],
+  ["⌥ 点击", "选中父级元素"],
+  ["拖拽", "移动元素，自动对齐吸附"],
+  ["拖拽手柄 / ⇧", "缩放 / 等比缩放"],
+  ["方向键 / ⇧方向键", "微调 1px / 10px"],
+  ["Delete / ⌫", "删除元素"],
+  ["⌘Z / ⌘⇧Z", "撤销 / 重做"],
+  ["Enter / ⇧Enter", "进入子级 / 返回父级"],
+  ["Tab / ⇧Tab", "下一个 / 上一个兄弟元素"],
+  ["Esc", "取消选中，再按退出编辑"]
+];
+class it {
+  constructor(t, e, s, n) {
+    this.panel = e, this.shortcuts = s, this.cb = n, this.panelOpen = !1, this.records = [];
     const i = document.createElement("div");
     i.className = "brand";
-    const o = document.createElement("span");
-    o.className = "brand-dot", i.append(o, "Sidetation"), t.append(i);
-    const r = (l, h) => {
-      const c = document.createElement("button");
-      return c.textContent = l, c.addEventListener("click", h), t.append(c), c;
-    }, a = () => {
-      const l = document.createElement("div");
-      l.className = "divider", t.append(l);
+    const a = document.createElement("span");
+    a.className = "brand-dot", i.append(a, "Sidetation"), t.append(i);
+    const r = (c, m) => {
+      const f = document.createElement("button");
+      return f.textContent = c, f.addEventListener("click", m), t.append(f), f;
+    }, l = () => {
+      const c = document.createElement("div");
+      c.className = "divider", t.append(c);
     };
-    this.toggleBtn = r("开始编辑", () => s.onToggle()), this.toggleBtn.classList.add("primary"), this.hintEl = document.createElement("div"), this.hintEl.className = "hint", t.append(this.hintEl), a(), this.editsBtn = r("修改 0", () => this.togglePanel()), this.resetBtn = r("重置", () => s.onReset()), a(), this.mdBtn = r("复制 Markdown", () => s.onCopyMd()), this.cssBtn = r("复制 CSS", () => s.onCopyCss());
+    this.toggleBtn = r("开始编辑", () => n.onToggle()), this.toggleBtn.classList.add("primary"), this.kbdBtn = r("", () => {
+    }), this.kbdBtn.classList.add("kbd-btn"), this.kbdBtn.title = "快捷键";
+    const d = "http://www.w3.org/2000/svg", h = document.createElementNS(d, "svg");
+    h.setAttribute("viewBox", "0 0 24 24"), h.setAttribute("fill", "none"), h.setAttribute("stroke", "currentColor"), h.setAttribute("stroke-width", "2"), h.setAttribute("stroke-linecap", "round"), h.setAttribute("stroke-linejoin", "round");
+    const g = document.createElementNS(d, "path");
+    g.setAttribute("d", "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"), h.append(g), this.kbdBtn.append(h), this.buildShortcuts(), this.kbdBtn.addEventListener("mouseenter", () => this.showShortcuts()), this.kbdBtn.addEventListener("mouseleave", () => this.shortcuts.classList.remove("open")), l(), this.editsBtn = r("修改 0", () => this.togglePanel()), this.resetBtn = r("重置", () => n.onReset()), l(), this.mdBtn = r("复制 Markdown", () => n.onCopyMd()), this.cssBtn = r("复制 CSS", () => n.onCopyCss());
+  }
+  buildShortcuts() {
+    const t = document.createElement("div");
+    t.className = "shortcuts-title", t.textContent = "快捷键", this.shortcuts.append(t);
+    for (const [e, s] of ot) {
+      const n = document.createElement("div");
+      n.className = "shortcut-row";
+      const i = document.createElement("span");
+      i.className = "kbd", i.textContent = e;
+      const a = document.createElement("span");
+      a.className = "shortcut-desc", a.textContent = s, n.append(i, a), this.shortcuts.append(n);
+    }
+  }
+  /** before -> after square thumbnails so the user can see what changed */
+  buildThumbs(t) {
+    const e = document.createElement("div");
+    e.className = "edit-thumbs";
+    const s = (a, r = !1) => {
+      const l = document.createElement("div");
+      if (l.className = "thumb", r)
+        l.classList.add("deleted"), l.textContent = "✕";
+      else if (a) {
+        const d = document.createElement("img");
+        d.src = a, d.alt = "", l.append(d);
+      } else
+        l.textContent = "?", l.classList.add("empty");
+      return l;
+    }, n = document.createElement("span");
+    n.className = "thumb-arrow", n.textContent = "→";
+    const i = t.deleted || !t.el.isConnected ? s(null, !0) : s(X(t.el));
+    return e.append(s(t.beforeSnap), n, i), e;
+  }
+  showShortcuts() {
+    const t = this.kbdBtn.getBoundingClientRect();
+    this.shortcuts.style.left = `${t.left + t.width / 2}px`, this.shortcuts.style.bottom = `${window.innerHeight - t.top + 10}px`, this.shortcuts.classList.add("open");
   }
   togglePanel() {
     this.panelOpen = !this.panelOpen, this.panel.classList.toggle("open", this.panelOpen), this.panelOpen && this.renderPanel();
   }
   update(t, e) {
-    this.records = e, this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.hintEl.textContent = t ? "拖拽移动 · Del 删除 · ⌘Z 撤销 · Esc 退出" : "", this.hintEl.style.display = t ? "" : "none", this.editsBtn.textContent = `修改 ${e.length}`;
+    this.records = e, this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.kbdBtn.style.display = t ? "" : "none", t || this.shortcuts.classList.remove("open"), this.editsBtn.textContent = `修改 ${e.length}`;
     const s = e.length === 0;
     this.editsBtn.disabled = s, this.resetBtn.disabled = s, this.mdBtn.disabled = s, this.cssBtn.disabled = s, s && this.panelOpen ? this.togglePanel() : this.panelOpen && this.renderPanel();
   }
@@ -492,91 +883,286 @@ class O {
     }
     for (const t of this.records) {
       const e = document.createElement("div");
-      e.className = "edit-row";
+      e.className = "edit-row", e.append(this.buildThumbs(t));
       const s = [];
-      t.deleted && s.push("删除"), t.moved && s.push(`移动 Δx ${m(t.dx)} / Δy ${m(t.dy)}`), t.resized && s.push(
-        `尺寸 ${m(t.startSize.w)}×${m(t.startSize.h)} → ${m(t.size.w)}×${m(t.size.h)}`
+      t.deleted && s.push("删除"), t.moved && s.push(`移动 Δx ${b(t.dx)} / Δy ${b(t.dy)}`), t.resized && s.push(
+        `尺寸 ${b(t.startSize.w)}×${b(t.startSize.h)} → ${b(t.size.w)}×${b(t.size.h)}`
       );
+      const n = Object.keys(t.props).length;
+      n && s.push(`样式 ×${n}`), t.text !== null && s.push("文字");
       const i = document.createElement("div");
       i.className = "edit-info";
-      const o = document.createElement("div");
-      o.className = "edit-sel", o.textContent = t.selector;
+      const a = document.createElement("div");
+      a.className = "edit-sel", a.textContent = t.selector;
       const r = document.createElement("div");
-      r.className = "edit-delta", r.textContent = s.join(" · "), i.append(o, r), e.append(i);
-      const a = document.createElement("button");
-      a.textContent = "撤销", a.addEventListener("click", () => this.cb.onRevert(t.id)), e.append(a), this.panel.append(e);
+      r.className = "edit-delta", r.textContent = s.join(" · "), i.append(a, r), e.append(i);
+      const l = document.createElement("button");
+      l.textContent = "撤销", l.addEventListener("click", () => this.cb.onRevert(t.id)), e.append(l), this.panel.append(e);
     }
   }
 }
-function U(n, t, e) {
-  const s = [], i = [], o = (p) => {
-    s.push(p.left, p.right, p.left + p.width / 2), i.push(p.top, p.bottom, p.top + p.height / 2);
-  }, r = n.parentElement;
-  if (r && r !== document.body && o(r.getBoundingClientRect()), r) {
-    let p = 0;
-    for (const g of Array.from(r.children)) {
-      if (g === n || !(g instanceof HTMLElement)) continue;
-      const f = g.getBoundingClientRect();
-      if (!(f.width === 0 && f.height === 0) && (o(f), ++p >= 30))
+const C = ["flex-start", "center", "flex-end"], T = (o) => Math.round(parseFloat(o) || 0), L = (o) => Math.round(o).toString(16).padStart(2, "0");
+function B(o) {
+  const t = o.match(/rgba?\(([^)]+)\)/);
+  if (!t) return { hex: "#000000", alpha: o && o !== "transparent" ? 1 : 0 };
+  const e = t[1].split(",").map((s) => parseFloat(s));
+  return { hex: `#${L(e[0])}${L(e[1])}${L(e[2])}`, alpha: e[3] ?? 1 };
+}
+function rt(o, t) {
+  if (t >= 1) return o;
+  const e = parseInt(o.slice(1, 3), 16), s = parseInt(o.slice(3, 5), 16), n = parseInt(o.slice(5, 7), 16);
+  return `rgba(${e}, ${s}, ${n}, ${+t.toFixed(3)})`;
+}
+function M(o) {
+  return o.includes("center") ? 1 : o.includes("end") ? 2 : 0;
+}
+class at {
+  constructor(t, e) {
+    this.root = t, this.host = e, this.el = null, this.flow = "none", this.flowBtns = [], this.alignBtns = [], this.padSides = [], this.padIndependent = !1, this.layoutOnly = [], this.build();
+  }
+  // ---------- DOM construction ----------
+  section(t) {
+    const e = document.createElement("div");
+    e.className = "props-section";
+    const s = document.createElement("div");
+    return s.className = "props-title", s.textContent = t, e.append(s), this.root.append(e), e;
+  }
+  row(t, e) {
+    const s = document.createElement("div");
+    if (s.className = "props-row", e) {
+      const n = document.createElement("div");
+      n.className = "props-label", n.textContent = e, s.append(n);
+    }
+    return t.append(s), s;
+  }
+  num(t, e, s = 0) {
+    const n = document.createElement("input");
+    return n.type = "number", n.min = String(s), n.addEventListener("input", () => {
+      const i = parseFloat(n.value);
+      Number.isNaN(i) || e(i);
+    }), t.append(n), n;
+  }
+  color(t, e) {
+    const s = document.createElement("input");
+    return s.type = "color", s.addEventListener("input", () => e(s.value)), t.append(s), s;
+  }
+  build() {
+    const t = this.section("Auto layout"), e = this.row(t, "Flow"), s = document.createElement("div");
+    s.className = "seg";
+    const n = [
+      ["none", "✕", "不使用 flex"],
+      ["col", "↓", "纵向排列 (column)"],
+      ["row", "→", "横向排列 (row)"],
+      ["wrap", "⤸", "横向换行 (wrap)"]
+    ];
+    for (const [u, x, v] of n) {
+      const k = document.createElement("button");
+      k.textContent = x, k.title = v, k.addEventListener("click", () => this.applyFlow(u)), s.append(k), this.flowBtns.push(k);
+    }
+    e.append(s);
+    const i = this.row(t, "W / H");
+    this.wInput = this.num(i, (u) => this.host.setSize(u, null), 8), this.hInput = this.num(i, (u) => this.host.setSize(null, u), 8);
+    const a = this.row(t, "Align"), r = document.createElement("div");
+    r.className = "align-grid";
+    for (let u = 0; u < 3; u++)
+      for (let x = 0; x < 3; x++) {
+        const v = document.createElement("button");
+        v.addEventListener("click", () => this.applyAlign(u, x)), r.append(v), this.alignBtns.push(v);
+      }
+    a.append(r);
+    const l = document.createElement("div");
+    l.style.flex = "1";
+    const d = document.createElement("div");
+    d.className = "props-label", d.textContent = "Gap", l.append(d), this.gapInput = this.num(l, (u) => this.host.setProps({ gap: `${u}px` })), a.append(l), this.layoutOnly.push(r, l), this.padLinkedRow = this.row(t, "Padding"), this.padXInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padYInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padXInput.title = "水平 padding", this.padYInput.title = "垂直 padding", this.padToggle = document.createElement("button"), this.padToggle.className = "pad-toggle", this.padToggle.textContent = "⊞", this.padToggle.title = "四边独立 padding", this.padToggle.addEventListener("click", () => this.togglePadMode()), this.padLinkedRow.append(this.padToggle), this.padGridRow = this.row(t, ""), this.padGridRow.style.display = "none";
+    const h = document.createElement("div");
+    h.className = "pad-grid";
+    const g = ["左 padding", "上 padding", "右 padding", "下 padding"];
+    for (let u = 0; u < 4; u++) {
+      const x = this.num(h, () => this.applyPadding());
+      x.title = g[u], this.padSides.push(x);
+    }
+    this.padGridRow.append(h);
+    const c = this.row(t), m = document.createElement("label");
+    m.className = "check", this.clipInput = document.createElement("input"), this.clipInput.type = "checkbox", this.clipInput.addEventListener(
+      "change",
+      () => this.host.setProps({ overflow: this.clipInput.checked ? "hidden" : "visible" })
+    ), m.append(this.clipInput, "Clip content"), c.append(m);
+    const f = this.section("Appearance"), S = this.row(f, "Opacity %");
+    this.opacityInput = this.num(
+      S,
+      (u) => this.host.setProps({ opacity: String(Math.min(100, Math.max(0, u)) / 100) })
+    );
+    const z = this.row(f, "Radius");
+    this.radiusInput = this.num(z, (u) => this.host.setProps({ "border-radius": `${u}px` }));
+    const y = this.section("Fill"), w = this.row(y, "Color");
+    this.fillColor = this.color(w, () => this.applyFill()), this.fillPct = this.num(w, () => this.applyFill()), this.fillPct.title = "不透明度 %";
+    const W = this.section("Stroke"), A = this.row(W, "Color / W");
+    this.strokeColor = this.color(A, () => this.applyStroke()), this.strokeWidth = this.num(A, () => this.applyStroke()), this.strokeWidth.step = "0.5", this.strokeWidth.title = "描边宽度 px";
+  }
+  // ---------- writes ----------
+  applyFlow(t) {
+    this.flow = t, t === "none" ? this.host.setProps({ display: "block", "flex-direction": null, "flex-wrap": null }) : this.host.setProps({
+      display: "flex",
+      "flex-direction": t === "col" ? "column" : "row",
+      "flex-wrap": t === "wrap" ? "wrap" : "nowrap"
+    }), this.markFlow();
+  }
+  applyAlign(t, e) {
+    const s = this.flow === "col" ? C[t] : C[e], n = this.flow === "col" ? C[e] : C[t];
+    this.host.setProps({ "justify-content": s, "align-items": n }), this.markAlign(t, e);
+  }
+  applyPadding() {
+    if (this.padIndependent) {
+      const [t, e, s, n] = this.padSides.map((i) => parseFloat(i.value) || 0);
+      this.host.setProps({ padding: `${e}px ${s}px ${n}px ${t}px` });
+    } else {
+      const t = parseFloat(this.padXInput.value) || 0, e = parseFloat(this.padYInput.value) || 0;
+      this.host.setProps({ padding: `${e}px ${t}px` });
+    }
+  }
+  setPadMode(t) {
+    this.padIndependent = t, this.padXInput.style.display = t ? "none" : "", this.padYInput.style.display = t ? "none" : "", this.padGridRow.style.display = t ? "" : "none", this.padToggle.classList.toggle("on", t);
+  }
+  togglePadMode() {
+    const t = !this.padIndependent;
+    if (t) {
+      const e = this.padXInput.value || "0", s = this.padYInput.value || "0", n = [e, s, e, s];
+      this.padSides.forEach((i, a) => i.value = n[a]);
+    } else
+      this.padXInput.value = this.padSides[0].value || "0", this.padYInput.value = this.padSides[1].value || "0", this.applyPadding();
+    this.setPadMode(t);
+  }
+  applyFill() {
+    const t = Math.min(100, Math.max(0, parseFloat(this.fillPct.value) || 0));
+    this.host.setProps({ "background-color": rt(this.fillColor.value, t / 100) });
+  }
+  applyStroke() {
+    const t = Math.max(0, parseFloat(this.strokeWidth.value) || 0);
+    this.host.setProps({
+      "border-width": `${t}px`,
+      "border-style": "solid",
+      "border-color": this.strokeColor.value
+    });
+  }
+  // ---------- reads ----------
+  markFlow() {
+    const t = ["none", "col", "row", "wrap"].indexOf(this.flow);
+    this.flowBtns.forEach((e, s) => e.classList.toggle("on", s === t));
+    for (const e of this.layoutOnly) e.classList.toggle("disabled", this.flow === "none");
+  }
+  markAlign(t, e) {
+    this.alignBtns.forEach((s, n) => s.classList.toggle("on", n === t * 3 + e));
+  }
+  focusWithin() {
+    const t = this.root.getRootNode();
+    return t instanceof ShadowRoot && this.root.contains(t.activeElement);
+  }
+  populate(t) {
+    const e = getComputedStyle(t), s = t.getBoundingClientRect();
+    e.display.includes("flex") ? this.flow = e.flexDirection.startsWith("column") ? "col" : e.flexWrap === "wrap" ? "wrap" : "row" : this.flow = "none", this.markFlow(), this.wInput.value = String(Math.round(s.width)), this.hInput.value = String(Math.round(s.height));
+    const n = M(e.justifyContent), i = M(e.alignItems);
+    this.markAlign(this.flow === "col" ? n : i, this.flow === "col" ? i : n), this.gapInput.value = String(e.columnGap === "normal" ? 0 : T(e.columnGap));
+    const a = [e.paddingLeft, e.paddingTop, e.paddingRight, e.paddingBottom].map(T), r = a[0] === a[2] && a[1] === a[3];
+    this.setPadMode(!r), this.padXInput.value = String(a[0]), this.padYInput.value = String(a[1]), this.padSides.forEach((h, g) => h.value = String(a[g])), this.clipInput.checked = e.overflowX !== "visible", this.opacityInput.value = String(Math.round(parseFloat(e.opacity) * 100)), this.radiusInput.value = String(T(e.borderTopLeftRadius));
+    const l = B(e.backgroundColor);
+    this.fillColor.value = l.hex, this.fillPct.value = String(Math.round(l.alpha * 100));
+    const d = B(e.borderTopColor);
+    this.strokeColor.value = d.hex, this.strokeWidth.value = String(parseFloat(e.borderTopWidth) || 0);
+  }
+  // ---------- public ----------
+  setTarget(t) {
+    this.el = t, this.root.classList.toggle("open", t !== null), t && !this.focusWithin() && this.populate(t);
+  }
+  /** re-read values after undo/redo etc., unless the user is typing here */
+  sync() {
+    this.el && this.el.isConnected && !this.focusWithin() && this.populate(this.el);
+  }
+  /** live W/H while dragging handles */
+  refreshRect(t) {
+    this.focusWithin() || (this.wInput.value = String(Math.round(t.width)), this.hInput.value = String(Math.round(t.height)));
+  }
+}
+function lt(o, t, e) {
+  const s = [], n = [], i = (c) => {
+    s.push(c.left, c.right, c.left + c.width / 2), n.push(c.top, c.bottom, c.top + c.height / 2);
+  }, a = o.parentElement;
+  if (a && a !== document.body && i(a.getBoundingClientRect()), a) {
+    let c = 0;
+    for (const m of Array.from(a.children)) {
+      if (m === o || !(m instanceof HTMLElement)) continue;
+      const f = m.getBoundingClientRect();
+      if (!(f.width === 0 && f.height === 0) && (i(f), ++c >= 30))
         break;
     }
   }
-  const a = [t.left, t.left + t.width, t.left + t.width / 2], l = [t.top, t.top + t.height, t.top + t.height / 2], h = (p, g) => {
-    let f = e + 1, z = null;
-    for (const E of p)
-      for (const w of g) {
-        const S = Math.abs(w - E);
-        S < f && (f = S, z = { adj: w - E, guide: w });
+  const r = [t.left, t.left + t.width, t.left + t.width / 2], l = [t.top, t.top + t.height, t.top + t.height / 2], d = (c, m) => {
+    let f = e + 1, S = null;
+    for (const z of c)
+      for (const y of m) {
+        const w = Math.abs(y - z);
+        w < f && (f = w, S = { adj: y - z, guide: y });
       }
-    return z;
-  }, c = h(a, s), u = h(l, i);
+    return S;
+  }, h = d(r, s), g = d(l, n);
   return {
-    adjX: (c == null ? void 0 : c.adj) ?? 0,
-    adjY: (u == null ? void 0 : u.adj) ?? 0,
-    guideV: (c == null ? void 0 : c.guide) ?? null,
-    guideH: (u == null ? void 0 : u.guide) ?? null
+    adjX: (h == null ? void 0 : h.adj) ?? 0,
+    adjY: (g == null ? void 0 : g.adj) ?? 0,
+    guideV: (h == null ? void 0 : h.guide) ?? null,
+    guideH: (g == null ? void 0 : g.guide) ?? null
   };
 }
-const d = Math.round;
-function K(n) {
-  const t = n.el.getBoundingClientRect();
+const p = Math.round;
+function dt(o) {
+  const t = o.el.getBoundingClientRect();
   return { x: t.left + window.scrollX, y: t.top + window.scrollY, w: t.width, h: t.height };
 }
-function C(n) {
-  const t = d(n);
+function N(o) {
+  const t = p(o);
   return t > 0 ? `+${t}` : `${t}`;
 }
-function D(n) {
-  const t = n.filter((s) => s.el.isConnected), e = [
+function j(o) {
+  const t = o.filter((s) => s.el.isConnected), e = [
     `# Sidetation 视觉修改记录（${t.length} 处）`,
     "",
     `- 页面：${location.href}`,
     `- 视口：${window.innerWidth}×${window.innerHeight}`,
     ""
   ];
-  return t.forEach((s, i) => {
-    const o = s.originalRect;
-    if (e.push(`## ${i + 1}. \`${s.selector}\``), e.push(`- 元素：\`<${s.tag}>\``), s.deleted) {
-      e.push("- **删除该元素**"), e.push(`- 原始盒（页面坐标）：x ${d(o.x)}，y ${d(o.y)}，w ${d(o.w)}，h ${d(o.h)}`), e.push("");
+  return t.forEach((s, n) => {
+    const i = s.originalRect;
+    if (e.push(`## ${n + 1}. \`${s.selector}\``), e.push(`- 元素：\`<${s.tag}>\``), s.deleted) {
+      e.push("- **删除该元素**"), e.push(`- 原始盒（页面坐标）：x ${p(i.x)}，y ${p(i.y)}，w ${p(i.w)}，h ${p(i.h)}`), e.push("");
       return;
     }
-    const r = K(s);
-    s.moved && e.push(`- 移动：Δx ${C(s.dx)}px，Δy ${C(s.dy)}px`), s.resized && e.push(
-      `- 尺寸：${d(s.startSize.w)}×${d(s.startSize.h)} → ${d(s.size.w)}×${d(s.size.h)}`
-    ), e.push(`- 原始盒（页面坐标）：x ${d(o.x)}，y ${d(o.y)}，w ${d(o.w)}，h ${d(o.h)}`), e.push(`- 修改后：x ${d(r.x)}，y ${d(r.y)}，w ${d(r.w)}，h ${d(r.h)}`), e.push("");
+    const a = dt(s);
+    s.moved && e.push(`- 移动：Δx ${N(s.dx)}px，Δy ${N(s.dy)}px`), s.resized && e.push(
+      `- 尺寸：${p(s.startSize.w)}×${p(s.startSize.h)} → ${p(s.size.w)}×${p(s.size.h)}`
+    );
+    const r = Object.entries(s.props);
+    if (r.length && e.push(`- 样式：${r.map(([l, d]) => `\`${l}: ${d}\``).join("，")}`), s.text !== null) {
+      const l = (d) => (d ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
+      e.push(`- 文字："${l(s.savedText)}" → "${l(s.text)}"`);
+    }
+    e.push(`- 原始盒（页面坐标）：x ${p(i.x)}，y ${p(i.y)}，w ${p(i.w)}，h ${p(i.h)}`), e.push(`- 修改后：x ${p(a.x)}，y ${p(a.y)}，w ${p(a.w)}，h ${p(a.h)}`), e.push("");
   }), e.push("---"), e.push(
     "请把以上视觉改动落实到源码中：根据元素所在布局选择合适的方式（margin / padding / flex / grid / gap / width / height 等），不要直接照抄 transform 位移，那只是编辑器里的临时表现。"
   ), e.join(`
 `);
 }
-function L(n) {
-  return n.filter((s) => s.el.isConnected).map((s) => {
-    const i = [];
-    return s.deleted ? i.push("  display: none;") : (s.moved && i.push(`  transform: translate(${d(s.dx)}px, ${d(s.dy)}px);`), s.resized && (i.push(`  width: ${d(s.size.w - s.sizeAdj.w)}px;`), i.push(`  height: ${d(s.size.h - s.sizeAdj.h)}px;`))), `${`/* ${s.tag}: ${d(s.startSize.w)}×${d(s.startSize.h)} @ (${d(
+function O(o) {
+  return o.filter((s) => s.el.isConnected).map((s) => {
+    const n = [];
+    if (s.deleted)
+      n.push("  display: none;");
+    else {
+      s.moved && n.push(`  transform: translate(${p(s.dx)}px, ${p(s.dy)}px);`), s.resized && (n.push(`  width: ${p(s.size.w - s.sizeAdj.w)}px;`), n.push(`  height: ${p(s.size.h - s.sizeAdj.h)}px;`));
+      for (const [a, r] of Object.entries(s.props)) n.push(`  ${a}: ${r};`);
+    }
+    return `${`/* ${s.tag}: ${p(s.startSize.w)}×${p(s.startSize.h)} @ (${p(
       s.originalRect.x
-    )}, ${d(s.originalRect.y)}) */`}
+    )}, ${p(s.originalRect.y)}) */`}
 ${s.selector} {
-${i.join(`
+${n.join(`
 `)}
 }`;
   }).join(`
@@ -584,11 +1170,16 @@ ${i.join(`
 `) + `
 `;
 }
-const W = 3;
-class V {
+const ht = 3;
+class pt {
   constructor(t = {}) {
-    this.overlay = new R(), this.history = new Y(), this.active = !1, this.hovered = null, this.selected = null, this.drag = null, this.resize = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
-      this.selected && this.selected.isConnected ? this.overlay.setSelection(this.selected.getBoundingClientRect(), this.selectionLabel()) : (this.selected && (this.selected = null), this.overlay.setSelection(null)), this.hovered && this.hovered.isConnected && this.hovered !== this.selected ? this.overlay.setHover(this.hovered.getBoundingClientRect()) : this.overlay.setHover(null), this.rafId = requestAnimationFrame(this.loop);
+    this.overlay = new G(), this.history = new nt(), this.active = !1, this.hovered = null, this.selected = null, this.drag = null, this.resize = null, this.textEdit = null, this.lastDownAt = 0, this.lastDownTarget = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
+      if (this.selected && this.selected.isConnected) {
+        const e = this.selected.getBoundingClientRect();
+        this.overlay.setSelection(e, this.selectionLabel()), this.propsPanel.refreshRect(e);
+      } else
+        this.selected && (this.selected = null), this.overlay.setSelection(null);
+      this.hovered && this.hovered.isConnected && this.hovered !== this.selected ? this.overlay.setHover(this.hovered.getBoundingClientRect()) : this.overlay.setHover(null), this.rafId = requestAnimationFrame(this.loop);
     }, this.onPointerMove = (e) => {
       if (this.resize) {
         this.moveResize(e);
@@ -605,6 +1196,10 @@ class V {
       this.hovered = this.pageElementAt(e.clientX, e.clientY);
     }, this.onPointerDown = (e) => {
       if (this.inOverlay(e)) return;
+      if (this.textEdit) {
+        if (e.composedPath().includes(this.textEdit.el)) return;
+        this.commitTextEdit();
+      }
       if (e.preventDefault(), e.stopPropagation(), e.altKey && this.selected) {
         this.isSelectable(this.selected.parentElement) && this.select(this.selected.parentElement);
         return;
@@ -614,10 +1209,15 @@ class V {
         this.select(null);
         return;
       }
-      this.selected !== null && (s === this.selected || this.selected.contains(s)) || this.select(s);
-      const o = this.selected;
+      const n = Date.now();
+      if (s === this.lastDownTarget && n - this.lastDownAt < 400) {
+        this.lastDownAt = 0, this.startTextEdit(s);
+        return;
+      }
+      this.lastDownAt = n, this.lastDownTarget = s, this.selected !== null && (s === this.selected || this.selected.contains(s)) || this.select(s);
+      const a = this.selected;
       this.drag = {
-        el: o,
+        el: a,
         startX: e.clientX,
         startY: e.clientY,
         rec: null,
@@ -638,8 +1238,13 @@ class V {
         this.drag = null, this.overlay.setGuides(null, null), document.documentElement.style.cursor = "", s.moved && s.rec && s.before ? this.history.commit(s.rec, s.before) : s.downTarget !== this.selected && this.select(s.downTarget), e.preventDefault(), e.stopPropagation();
       }
     }, this.blockEvent = (e) => {
-      this.inOverlay(e) || (e.preventDefault(), e.stopImmediatePropagation());
+      this.inOverlay(e) || this.textEdit && e.composedPath().includes(this.textEdit.el) || (e.preventDefault(), e.stopImmediatePropagation());
     }, this.onKeyDown = (e) => {
+      if (this.inOverlay(e)) return;
+      if (this.textEdit) {
+        e.key === "Escape" && (e.preventDefault(), e.stopPropagation(), this.commitTextEdit());
+        return;
+      }
       const s = e.metaKey || e.ctrlKey;
       if (e.key === "Escape") {
         e.preventDefault(), e.stopPropagation(), this.selected ? this.select(null) : this.deactivate();
@@ -652,38 +1257,41 @@ class V {
       if (!this.selected) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault(), e.stopPropagation();
-        const h = this.history.ensure(this.selected), c = this.history.snapshot(h);
-        h.deleted = !0, this.select(null), this.history.commit(h, c), this.overlay.toast("已删除（⌘Z 撤销）");
+        const d = this.history.ensure(this.selected), h = this.history.snapshot(d);
+        d.deleted = !0, this.select(null), this.history.commit(d, h), this.overlay.toast("已删除（⌘Z 撤销）");
         return;
       }
       if (e.key === "Enter") {
         e.preventDefault(), e.stopPropagation();
-        const h = e.shiftKey ? this.selected.parentElement : this.selected.firstElementChild;
-        this.isSelectable(h) && this.select(h);
+        const d = e.shiftKey ? this.selected.parentElement : this.selected.firstElementChild;
+        this.isSelectable(d) && this.select(d);
         return;
       }
       if (e.key === "Tab") {
         e.preventDefault(), e.stopPropagation();
-        const h = e.shiftKey ? this.selected.previousElementSibling : this.selected.nextElementSibling;
-        this.isSelectable(h) && this.select(h);
+        const d = e.shiftKey ? this.selected.previousElementSibling : this.selected.nextElementSibling;
+        this.isSelectable(d) && this.select(d);
         return;
       }
-      const i = e.shiftKey ? 10 : 1, r = {
-        ArrowLeft: [-i, 0],
-        ArrowRight: [i, 0],
-        ArrowUp: [0, -i],
-        ArrowDown: [0, i]
+      const n = e.shiftKey ? 10 : 1, a = {
+        ArrowLeft: [-n, 0],
+        ArrowRight: [n, 0],
+        ArrowUp: [0, -n],
+        ArrowDown: [0, n]
       }[e.key];
-      if (!r) return;
+      if (!a) return;
       e.preventDefault(), e.stopPropagation();
-      const a = this.history.ensure(this.selected), l = this.history.snapshot(a);
-      a.dx += r[0], a.dy += r[1], a.moved = !0, this.history.commit(a, l, { coalesce: !0 });
-    }, this.opts = { autoStart: !1, snapThreshold: 6, ...t }, this.toolbar = new O(this.overlay.toolbarEl, this.overlay.panelEl, {
+      const r = this.history.ensure(this.selected), l = this.history.snapshot(r);
+      r.dx += a[0], r.dy += a[1], r.moved = !0, this.history.commit(r, l, { coalesce: "nudge" });
+    }, this.opts = { autoStart: !1, snapThreshold: 6, ...t }, this.toolbar = new it(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
       onToggle: () => this.active ? this.deactivate() : this.activate(),
-      onCopyMd: () => this.copy(D(this.history.all()), "已复制 Markdown"),
-      onCopyCss: () => this.copy(L(this.history.all()), "已复制 CSS"),
+      onCopyMd: () => this.copy(j(this.history.all()), "已复制 Markdown"),
+      onCopyCss: () => this.copy(O(this.history.all()), "已复制 CSS"),
       onReset: () => this.history.resetAll(),
       onRevert: (e) => this.history.revert(e)
+    }), this.propsPanel = new at(this.overlay.propsEl, {
+      setProps: (e) => this.panelSetProps(e),
+      setSize: (e, s) => this.panelSetSize(e, s)
     }), this.history.onChange = () => this.syncUI(), this.overlay.onHandleDown = (e, s) => this.startResize(e, s), this.syncUI(), this.opts.autoStart && this.activate();
   }
   // ---------- lifecycle ----------
@@ -691,7 +1299,7 @@ class V {
     this.active || (this.active = !0, this.savedUserSelect = document.documentElement.style.userSelect, document.documentElement.style.userSelect = "none", window.addEventListener("pointermove", this.onPointerMove, !0), window.addEventListener("pointerdown", this.onPointerDown, !0), window.addEventListener("pointerup", this.onPointerUp, !0), window.addEventListener("pointercancel", this.onPointerUp, !0), window.addEventListener("click", this.blockEvent, !0), window.addEventListener("keydown", this.onKeyDown, !0), this.rafId = requestAnimationFrame(this.loop), this.syncUI());
   }
   deactivate() {
-    this.active && (this.active = !1, document.documentElement.style.userSelect = this.savedUserSelect, document.documentElement.style.cursor = "", window.removeEventListener("pointermove", this.onPointerMove, !0), window.removeEventListener("pointerdown", this.onPointerDown, !0), window.removeEventListener("pointerup", this.onPointerUp, !0), window.removeEventListener("pointercancel", this.onPointerUp, !0), window.removeEventListener("click", this.blockEvent, !0), window.removeEventListener("keydown", this.onKeyDown, !0), cancelAnimationFrame(this.rafId), this.hovered = null, this.selected = null, this.drag = null, this.resize = null, this.overlay.setHover(null), this.overlay.setSelection(null), this.overlay.setGuides(null, null), this.syncUI());
+    this.active && (this.commitTextEdit(), this.active = !1, document.documentElement.style.userSelect = this.savedUserSelect, document.documentElement.style.cursor = "", window.removeEventListener("pointermove", this.onPointerMove, !0), window.removeEventListener("pointerdown", this.onPointerDown, !0), window.removeEventListener("pointerup", this.onPointerUp, !0), window.removeEventListener("pointercancel", this.onPointerUp, !0), window.removeEventListener("click", this.blockEvent, !0), window.removeEventListener("keydown", this.onKeyDown, !0), cancelAnimationFrame(this.rafId), this.hovered = null, this.selected = null, this.drag = null, this.resize = null, this.propsPanel.setTarget(null), this.overlay.setHover(null), this.overlay.setSelection(null), this.overlay.setGuides(null, null), this.syncUI());
   }
   /** remove the toolbar/overlay entirely; applied edits stay on the page */
   destroy() {
@@ -700,7 +1308,7 @@ class V {
   selectionLabel() {
     if (!this.selected) return "";
     const t = this.selected.getBoundingClientRect();
-    return `${j(this.selected)}  ${Math.round(t.width)}×${Math.round(t.height)}`;
+    return `${q(this.selected)}  ${Math.round(t.width)}×${Math.round(t.height)}`;
   }
   // ---------- element picking ----------
   pageElementAt(t, e) {
@@ -712,71 +1320,113 @@ class V {
     return t.composedPath().includes(this.overlay.host);
   }
   select(t) {
-    this.selected = t, this.hovered = null;
+    this.selected = t, this.hovered = null, this.propsPanel.setTarget(t);
   }
   isSelectable(t) {
     return t instanceof HTMLElement && t !== document.body && t !== document.documentElement && !t.closest("[data-sidetation]");
   }
+  // ---------- text editing ----------
+  startTextEdit(t) {
+    if (t.childElementCount > 0 || !(t.textContent ?? "").trim()) {
+      this.overlay.toast("仅支持纯文本元素（无子元素）");
+      return;
+    }
+    this.select(t);
+    const e = this.history.ensure(t);
+    this.textEdit = {
+      el: t,
+      rec: e,
+      before: this.history.snapshot(e),
+      savedUserSelect: t.style.getPropertyValue("user-select")
+    }, t.setAttribute("contenteditable", "plaintext-only"), t.isContentEditable || t.setAttribute("contenteditable", "true"), t.style.setProperty("user-select", "text"), t.focus();
+    const s = document.createRange();
+    s.selectNodeContents(t);
+    const n = window.getSelection();
+    n == null || n.removeAllRanges(), n == null || n.addRange(s);
+  }
+  commitTextEdit() {
+    var s;
+    const t = this.textEdit;
+    if (!t) return;
+    this.textEdit = null, t.el.removeAttribute("contenteditable"), t.savedUserSelect ? t.el.style.setProperty("user-select", t.savedUserSelect) : t.el.style.removeProperty("user-select"), (s = window.getSelection()) == null || s.removeAllRanges();
+    const e = t.el.textContent ?? "";
+    t.rec.text = e === t.rec.savedText ? null : e, this.history.commit(t.rec, t.before);
+  }
   // ---------- drag ----------
   moveDrag(t) {
-    const e = this.drag, s = t.clientX - e.startX, i = t.clientY - e.startY;
+    const e = this.drag, s = t.clientX - e.startX, n = t.clientY - e.startY;
     if (!e.moved) {
-      if (Math.hypot(s, i) < W) return;
+      if (Math.hypot(s, n) < ht) return;
       e.moved = !0, e.rec = this.history.ensure(e.el), e.before = this.history.snapshot(e.rec), e.baseDx = e.rec.dx, e.baseDy = e.rec.dy, document.documentElement.style.cursor = "move";
     }
-    const o = e.rec;
-    let r = e.baseDx + s, a = e.baseDy + i;
-    const l = e.el.getBoundingClientRect(), h = {
-      left: l.left + (r - o.dx),
-      top: l.top + (a - o.dy),
+    const i = e.rec;
+    let a = e.baseDx + s, r = e.baseDy + n;
+    const l = e.el.getBoundingClientRect(), d = {
+      left: l.left + (a - i.dx),
+      top: l.top + (r - i.dy),
       width: l.width,
       height: l.height
-    }, c = U(e.el, h, this.opts.snapThreshold);
-    r += c.adjX, a += c.adjY, this.overlay.setGuides(c.guideV, c.guideH), o.dx = r, o.dy = a, o.moved = !0, v(o);
+    }, h = lt(e.el, d, this.opts.snapThreshold);
+    a += h.adjX, r += h.adjY, this.overlay.setGuides(h.guideV, h.guideH), i.dx = a, i.dy = r, i.moved = !0, P(i);
   }
   // ---------- resize ----------
   startResize(t, e) {
     if (!this.selected) return;
     e.preventDefault(), e.stopPropagation();
-    const s = this.history.ensure(this.selected), i = this.selected.getBoundingClientRect();
+    const s = this.history.ensure(this.selected), n = this.selected.getBoundingClientRect();
     this.resize = {
       rec: s,
       before: this.history.snapshot(s),
       dir: t,
       startX: e.clientX,
       startY: e.clientY,
-      startW: i.width,
-      startH: i.height,
+      startW: n.width,
+      startH: n.height,
       baseDx: s.dx,
       baseDy: s.dy
     };
   }
   moveResize(t) {
-    const e = this.resize, { rec: s, dir: i } = e, o = t.clientX - e.startX, r = t.clientY - e.startY;
-    let a = e.startW, l = e.startH;
-    if (i.includes("e") && (a = e.startW + o), i.includes("w") && (a = e.startW - o), i.includes("s") && (l = e.startH + r), i.includes("n") && (l = e.startH - r), t.shiftKey && e.startH > 0 && e.startW > 0) {
-      const h = e.startW / e.startH;
-      i === "e" || i === "w" ? l = a / h : i === "n" || i === "s" ? a = l * h : Math.abs(o) > Math.abs(r) ? l = a / h : a = l * h;
+    const e = this.resize, { rec: s, dir: n } = e, i = t.clientX - e.startX, a = t.clientY - e.startY;
+    let r = e.startW, l = e.startH;
+    if (n.includes("e") && (r = e.startW + i), n.includes("w") && (r = e.startW - i), n.includes("s") && (l = e.startH + a), n.includes("n") && (l = e.startH - a), t.shiftKey && e.startH > 0 && e.startW > 0) {
+      const d = e.startW / e.startH;
+      n === "e" || n === "w" ? l = r / d : n === "n" || n === "s" ? r = l * d : Math.abs(i) > Math.abs(a) ? l = r / d : r = l * d;
     }
-    a = Math.max(8, Math.round(a)), l = Math.max(8, Math.round(l)), s.dx = i.includes("w") ? e.baseDx + (e.startW - a) : e.baseDx, s.dy = i.includes("n") ? e.baseDy + (e.startH - l) : e.baseDy, (s.dx !== e.baseDx || s.dy !== e.baseDy) && (s.moved = !0), s.size = { w: a, h: l }, s.resized = !0, v(s);
+    r = Math.max(8, Math.round(r)), l = Math.max(8, Math.round(l)), s.dx = n.includes("w") ? e.baseDx + (e.startW - r) : e.baseDx, s.dy = n.includes("n") ? e.baseDy + (e.startH - l) : e.baseDy, (s.dx !== e.baseDx || s.dy !== e.baseDy) && (s.moved = !0), s.size = { w: r, h: l }, s.resized = !0, P(s);
+  }
+  // ---------- properties panel ----------
+  panelSetProps(t) {
+    if (!this.selected) return;
+    this.commitTextEdit();
+    const e = this.history.ensure(this.selected), s = this.history.snapshot(e);
+    for (const [n, i] of Object.entries(t))
+      n in e.savedProps || (e.savedProps[n] = this.selected.style.getPropertyValue(n)), i === null ? delete e.props[n] : e.props[n] = i;
+    this.history.commit(e, s, { coalesce: `props:${Object.keys(t).sort().join(",")}` });
+  }
+  panelSetSize(t, e) {
+    if (!this.selected) return;
+    this.commitTextEdit();
+    const s = this.history.ensure(this.selected), n = this.history.snapshot(s);
+    t !== null && (s.size.w = Math.max(8, t)), e !== null && (s.size.h = Math.max(8, e)), s.resized = !0, this.history.commit(s, n, { coalesce: "size" });
   }
   // ---------- output ----------
   copy(t, e) {
-    var i;
+    var n;
     const s = () => {
-      const o = document.createElement("textarea");
-      o.value = t, o.style.position = "fixed", o.style.opacity = "0", document.body.append(o), o.select(), document.execCommand("copy"), o.remove(), this.overlay.toast(e);
+      const i = document.createElement("textarea");
+      i.value = t, i.style.position = "fixed", i.style.opacity = "0", document.body.append(i), i.select(), document.execCommand("copy"), i.remove(), this.overlay.toast(e);
     };
-    (i = navigator.clipboard) != null && i.writeText ? navigator.clipboard.writeText(t).then(
+    (n = navigator.clipboard) != null && n.writeText ? navigator.clipboard.writeText(t).then(
       () => this.overlay.toast(e),
       () => s()
     ) : s();
   }
   getMarkdown() {
-    return D(this.history.all());
+    return j(this.history.all());
   }
   getCSS() {
-    return L(this.history.all());
+    return O(this.history.all());
   }
   undo() {
     return this.history.undo();
@@ -785,13 +1435,13 @@ class V {
     return this.history.redo();
   }
   syncUI() {
-    this.history.prune(), this.toolbar.update(this.active, this.history.all());
+    this.history.prune(), this.toolbar.update(this.active, this.history.all()), this.propsPanel.sync();
   }
 }
-function F(n) {
-  return new V(n);
+function ct(o) {
+  return new pt(o);
 }
 export {
-  V as Sidetation,
-  F as init
+  pt as Sidetation,
+  ct as init
 };

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidetation — 像设计师一样拖拽网页，把改动交给 AI 落地</title>
+  <meta name="description" content="在真实网页里拖拽、缩放、编辑任何元素，导出结构化修改记录给 Claude Code / Cursor，或直接复制 CSS。" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="logo" href="./index.html"><span class="logo-dot"></span>Sidetation</a>
+      <div class="nav-links">
+        <a href="#how">工作方式</a>
+        <a href="#features">功能</a>
+        <a href="#install">安装</a>
+        <a href="#faq">FAQ</a>
+        <a href="./changelog.html">Changelog</a>
+        <a href="./blog.html">Blog</a>
+        <a class="gh" href="https://github.com/tllll64/Sidetation" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <h1>像设计师一样<em>拖拽网页</em>，<br />把改动交给 AI 落地</h1>
+      <p class="sub">
+        在真实页面里选中、拖动、缩放、改样式、改文字——Sidetation
+        记录每一处视觉修改，一键导出给 Claude Code / Cursor 改源码，或直接复制 CSS。
+      </p>
+      <div class="cta">
+        <button class="btn btn-dark" id="try-btn">在本页立即体验</button>
+        <button class="btn btn-light" id="copy-install">复制安装命令</button>
+      </div>
+      <p class="hint-line">本页已加载 Sidetation——点击体验后，下面的浏览器窗口（和整个页面）都可以随意编辑</p>
+    </header>
+
+    <div class="chips" id="chips">
+      <button class="chip on" data-tip="点选任意元素直接拖动，自动吸附兄弟元素的边缘与中线">拖拽移动</button>
+      <button class="chip" data-tip="8 个手柄自由拉伸，Shift 锁定宽高比">缩放</button>
+      <button class="chip" data-tip="Figma 式属性面板：Auto layout、四边 padding、Fill、Stroke、圆角、透明度">属性面板</button>
+      <button class="chip" data-tip="双击纯文本元素，行内直接改文字">文字编辑</button>
+      <button class="chip" data-tip="每条修改带「优化前 → 优化后」快照缩略图，⌘Z 全程可撤销">快照与撤销</button>
+    </div>
+
+    <div class="mock">
+      <div class="mock-bar">
+        <div class="mock-dots"><span></span><span></span><span></span></div>
+        <div class="mock-url">localhost:3000/tasks</div>
+      </div>
+      <div class="mock-body">
+        <div class="demo-title-line"></div>
+        <div class="task"><div class="task-check"></div><div class="task-line w1"></div></div>
+        <div class="task"><div class="task-check"></div><div class="task-line w2"></div></div>
+        <div class="task"><div class="task-check"></div><div class="task-line w3"></div></div>
+        <span class="demo-cta">提交任务</span>
+      </div>
+    </div>
+    <p class="demo-caption" id="chip-tip">点选任意元素直接拖动，自动吸附兄弟元素的边缘与中线</p>
+
+    <section id="how">
+      <div class="kicker">How it works</div>
+      <h2>三步，从「感觉不对」到「已经改好」</h2>
+      <p class="section-sub">不用截图圈红框，不用打字描述「往左一点、再小一点」。</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>直接改到满意</h3>
+          <p>点选元素拖到位、拉到合适大小，在属性面板里调间距、颜色、圆角，双击改文案。</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>自动记录 diff</h3>
+          <p>每处修改生成稳定选择器 + before/after 盒模型 + 样式变更，附前后快照缩略图。</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>交给 AI 或复制 CSS</h3>
+          <p>一键复制结构化 Markdown 粘给 coding agent 改真实源码；或直接导出可用的 CSS。</p>
+        </div>
+      </div>
+
+      <div class="code-card">
+        <div class="code-label">复制 Markdown 后你会得到</div>
+        <pre><span class="c-h"># Sidetation 视觉修改记录（2 处）</span>
+
+<span class="c-h">## 1. `div.cta-group &gt; button.btn-primary`</span>
+- 移动：Δx +24px，Δy 0px
+- 尺寸：112×47 → 160×56
+- 样式：<span class="c-d">`border-radius: 12px`</span>，<span class="c-d">`background-color: #3b6ef6`</span>
+
+<span class="c-h">## 2. `section.hero &gt; h1`</span>
+- 文字："旧标题" → "新标题"
+
+<span class="c-m">请把以上视觉改动落实到源码中：根据元素所在布局
+选择合适的方式（margin / flex / gap / width …）</span></pre>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="kicker">Features</div>
+      <h2>为「所见即所得的反馈」而生</h2>
+      <p class="section-sub">全部功能零依赖、框架无关，注入任何页面即可使用。</p>
+      <div class="grid">
+        <div class="feat"><div class="icon">🖐️</div><h3>拖拽移动</h3><p>transform 位移不破坏文档流，Figma 式参考线自动吸附对齐。</p></div>
+        <div class="feat"><div class="icon">↔️</div><h3>手柄缩放</h3><p>8 向手柄，Shift 等比，content-box 自动补偿，对侧边缘保持固定。</p></div>
+        <div class="feat"><div class="icon">🎛️</div><h3>属性面板</h3><p>Auto layout（flex 方向 / 对齐九宫格 / gap / 四边 padding）、Fill、Stroke、圆角、透明度。</p></div>
+        <div class="feat"><div class="icon">✏️</div><h3>文字编辑</h3><p>双击纯文本元素行内编辑，纯文本粘贴，改动同样进入修改记录。</p></div>
+        <div class="feat"><div class="icon">🖼️</div><h3>前后快照</h3><p>每条修改附「优化前 → 优化后」缩略图，原生 SVG 实现，无第三方依赖。</p></div>
+        <div class="feat"><div class="icon">⌘</div><h3>完整撤销栈</h3><p>手势级 undo / redo，连续微调自动合并，Delete 删除也可一键恢复。</p></div>
+        <div class="feat"><div class="icon">🎯</div><h3>稳定选择器</h3><p>优先 id / data-testid，过滤 CSS-in-JS 哈希类名，AI 能直接 grep 到源码。</p></div>
+        <div class="feat"><div class="icon">📋</div><h3>双格式导出</h3><p>结构化 Markdown 给 coding agent；或复制可直接粘贴的 CSS 覆盖。</p></div>
+        <div class="feat"><div class="icon">🧩</div><h3>多选批量编辑<span class="soon">即将上线</span></h3><p>Shift 加选多个元素，整组拖动、删除、改样式，一步撤销。</p></div>
+      </div>
+    </section>
+
+    <section id="install">
+      <div class="kicker">Install</div>
+      <h2>三种方式，10 秒用上</h2>
+      <p class="section-sub">自己的项目用 npm 包；别人的网站用控制台粘贴或书签一键注入。</p>
+
+      <div class="install-card">
+        <h3>npm 包（推荐，开发环境）</h3>
+        <p>零依赖、框架无关，React / Vue / 原生页面都能用。</p>
+        <div class="cmd"><span>npm install sidetation</span><button data-copy="npm install sidetation">复制</button></div>
+        <pre><span class="c-h">import</span> { init } <span class="c-h">from</span> 'sidetation';
+
+<span class="c-h">if</span> (import.meta.env.DEV) init();</pre>
+        <p class="note">npm 包正在发布中；发布前可用下方的 GitHub 构建方式提前体验。</p>
+      </div>
+
+      <div class="install-card">
+        <h3>控制台粘贴 / 书签注入（任意网站）</h3>
+        <p>
+          从 GitHub 克隆并构建一次，得到两个注入文件：<code class="inline">dist/console-paste.js</code>
+          粘进任意网站的 DevTools 控制台即可；<code class="inline">dist/bookmarklet.txt</code>
+          存为书签则可一键注入。控制台方式不受页面 CSP 限制。
+        </p>
+        <div class="cmd">
+          <span>git clone https://github.com/tllll64/Sidetation.git &amp;&amp; cd Sidetation &amp;&amp; npm install &amp;&amp; npm run build</span>
+          <button data-copy="git clone https://github.com/tllll64/Sidetation.git && cd Sidetation && npm install && npm run build">复制</button>
+        </div>
+        <p class="note">构建完成后打开 <code class="inline">dist/console-paste.js</code>，全选复制，到目标网站按 F12 打开控制台粘贴回车即可。</p>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="kicker">FAQ</div>
+      <h2>常见问题</h2>
+      <p class="section-sub"></p>
+      <div class="faq">
+        <details open>
+          <summary>它和 agentation 有什么区别？</summary>
+          <p>agentation 的思路是「点选元素 + 文字标注」，Sidetation 把表达方式升级为「直接操纵」：拖到位、拉到大小、改到颜色，工具负责把这些动作翻译成结构化 diff。两者殊途同归——都不生成代码，只生成让 AI 精确定位的上下文。</p>
+        </details>
+        <details>
+          <summary>拖拽会破坏页面布局吗？</summary>
+          <p>不会。移动用 <code>transform: translate</code> 实现，不触发重排；所有修改只写内联样式并保存原值，撤销即完整还原，刷新页面即全部消失。</p>
+        </details>
+        <details>
+          <summary>导出的 Markdown 为什么不直接给 CSS？</summary>
+          <p>给 AI 的记录会刻意标注「不要照抄 transform」——位移只是编辑器里的临时表现，AI 应该根据元素所在布局改 margin / flex / gap 等真正的布局属性。想要立即生效的样式，用「复制 CSS」。</p>
+        </details>
+        <details>
+          <summary>在别人的网站上能用吗？</summary>
+          <p>能。控制台粘贴或书签注入即可，UI 渲染在 Shadow DOM 隔离层里不受宿主样式影响，也兼容开启 Trusted Types 的站点。注意：第三方网站上导出的选择器对应不到你的源码，主要用「复制 CSS」。</p>
+        </details>
+        <details>
+          <summary>支持哪些快捷键？</summary>
+          <p>与 Figma 对齐：方向键微调（Shift ×10）、Delete 删除、⌘Z / ⌘⇧Z 撤销重做、Enter / Shift+Enter 下钻上钻、Tab 切换兄弟元素、双击改文字、Esc 退出。编辑模式下工具栏的 ⌘ 按钮可查看完整列表。</p>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="f-col">
+          <a class="logo" href="./index.html"><span class="logo-dot"></span>Sidetation</a>
+          <p class="f-tagline">像设计师一样拖拽网页，把改动交给 AI 落地。</p>
+        </div>
+        <div class="f-col">
+          <h4>产品</h4>
+          <a href="#how">工作方式</a>
+          <a href="#features">功能</a>
+          <a href="#install">安装</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="f-col">
+          <h4>Resources</h4>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./blog.html">Blog</a>
+        </div>
+        <div class="f-col">
+          <h4>社区</h4>
+          <a href="https://github.com/tllll64/Sidetation" target="_blank" rel="noopener">GitHub ↗</a>
+          <a href="https://github.com/tllll64/Sidetation/issues" target="_blank" rel="noopener">反馈问题 ↗</a>
+        </div>
+      </div>
+      <div class="f-credit">
+        Sidetation · 思路致敬 <a href="https://www.agentation.com/" target="_blank" rel="noopener">agentation</a> · MIT License
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    // dev: served by vite; production build would import the dist bundle instead
+    import { init } from '/src/index.ts';
+    const sidetation = init();
+
+    document.getElementById('try-btn').addEventListener('click', () => sidetation.activate());
+
+    const copyBtn = document.getElementById('copy-install');
+    const flash = (btn, text) => {
+      const old = btn.textContent;
+      btn.textContent = text;
+      setTimeout(() => (btn.textContent = old), 1400);
+    };
+    copyBtn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText('npm install sidetation');
+      flash(copyBtn, '已复制 ✓');
+    });
+    document.querySelectorAll('[data-copy]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        flash(btn, '已复制 ✓');
+      });
+    });
+
+    // feature chips drive the caption under the mockup
+    const tip = document.getElementById('chip-tip');
+    document.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach((c) => c.classList.remove('on'));
+        chip.classList.add('on');
+        tip.textContent = chip.dataset.tip;
+      });
+    });
+  </script>
+</body>
+</html>

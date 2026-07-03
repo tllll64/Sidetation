@@ -1,20 +1,39 @@
 import type { EditRecord, Snapshot } from './types';
 import { generateSelector } from './selector';
 import { applyRecord } from './apply';
+import { snapshotSVG } from './snapshot';
 
-interface Action {
+interface ActionEntry {
   rec: EditRecord;
   before: Snapshot;
   after: Snapshot;
-  /** consecutive coalescable actions (keyboard nudges) merge into one step */
-  coalesce: boolean;
+}
+
+/** one undo step; multi-select gestures put several records in one action */
+interface Action {
+  entries: ActionEntry[];
+  /** rapid same-kind actions (nudges, one input field) merge into one undo step */
+  coalesce: string | null;
   at: number;
 }
 
 const COALESCE_MS = 800;
 
-function isPristine(s: { moved: boolean; resized: boolean; deleted: boolean }): boolean {
-  return !s.moved && !s.resized && !s.deleted;
+function isPristine(s: {
+  moved: boolean;
+  resized: boolean;
+  deleted: boolean;
+  props: Record<string, string>;
+  text: string | null;
+}): boolean {
+  return (
+    !s.moved && !s.resized && !s.deleted && Object.keys(s.props).length === 0 && s.text === null
+  );
+}
+
+function sameProps(a: Record<string, string>, b: Record<string, string>): boolean {
+  const ka = Object.keys(a);
+  return ka.length === Object.keys(b).length && ka.every((k) => a[k] === b[k]);
 }
 
 function sameSnap(a: Snapshot, b: Snapshot): boolean {
@@ -25,16 +44,19 @@ function sameSnap(a: Snapshot, b: Snapshot): boolean {
     a.size.h === b.size.h &&
     a.moved === b.moved &&
     a.resized === b.resized &&
-    a.deleted === b.deleted
+    a.deleted === b.deleted &&
+    a.text === b.text &&
+    sameProps(a.props, b.props)
   );
 }
 
-const PRISTINE: Omit<Snapshot, 'size'> = {
+const PRISTINE: Omit<Snapshot, 'size' | 'props'> = {
   dx: 0,
   dy: 0,
   moved: false,
   resized: false,
   deleted: false,
+  text: null,
 };
 
 /**
@@ -90,6 +112,11 @@ export class History {
       deleted: false,
       startSize: { w: rect.width, h: rect.height },
       size: { w: rect.width, h: rect.height },
+      beforeSnap: snapshotSVG(el), // captured pre-edit: this IS the "before"
+      savedText: el.childElementCount === 0 ? el.textContent : null,
+      text: null,
+      props: {},
+      savedProps: {},
     };
     this.records.set(el, rec);
     return rec;
@@ -111,35 +138,56 @@ export class History {
       moved: rec.moved,
       resized: rec.resized,
       deleted: rec.deleted,
+      props: { ...rec.props },
+      text: rec.text,
     };
   }
 
-  /** finish a gesture: normalize, push onto the undo stack, re-render */
-  commit(rec: EditRecord, before: Snapshot, opts?: { coalesce?: boolean }): void {
-    if (rec.dx === 0 && rec.dy === 0) rec.moved = false; // dragged back to start = no move
-    applyRecord(rec);
-    const after = this.snapshot(rec);
-    if (sameSnap(before, after)) {
+  /** finish a single-element gesture */
+  commit(rec: EditRecord, before: Snapshot, opts?: { coalesce?: string }): void {
+    this.commitBatch([{ rec, before }], opts);
+  }
+
+  /** finish a (possibly multi-select) gesture as ONE undo step */
+  commitBatch(
+    items: { rec: EditRecord; before: Snapshot }[],
+    opts?: { coalesce?: string }
+  ): void {
+    const entries: ActionEntry[] = [];
+    for (const { rec, before } of items) {
+      if (rec.dx === 0 && rec.dy === 0) rec.moved = false; // dragged back to start = no move
+      applyRecord(rec);
+      const after = this.snapshot(rec);
+      if (!sameSnap(before, after)) entries.push({ rec, before, after });
       this.cleanup(rec);
+    }
+    if (entries.length === 0) {
       this.emit();
       return;
     }
+    const key = opts?.coalesce ?? null;
     const last = this.undoStack[this.undoStack.length - 1];
-    if (opts?.coalesce && last?.coalesce && last.rec === rec && Date.now() - last.at < COALESCE_MS) {
-      last.after = after;
+    const mergeable =
+      key !== null &&
+      last !== undefined &&
+      last.coalesce === key &&
+      Date.now() - last.at < COALESCE_MS &&
+      last.entries.length === entries.length &&
+      last.entries.every((en, i) => en.rec === entries[i].rec);
+    if (mergeable) {
+      entries.forEach((en, i) => (last.entries[i].after = en.after));
       last.at = Date.now();
     } else {
-      this.undoStack.push({ rec, before, after, coalesce: !!opts?.coalesce, at: Date.now() });
+      this.undoStack.push({ entries, coalesce: key, at: Date.now() });
     }
     this.redoStack.length = 0;
-    this.cleanup(rec);
     this.emit();
   }
 
   undo(): boolean {
     const a = this.undoStack.pop();
     if (!a) return false;
-    this.applySnap(a.rec, a.before);
+    for (const en of a.entries) this.applySnap(en.rec, en.before);
     this.redoStack.push(a);
     this.emit();
     return true;
@@ -148,7 +196,7 @@ export class History {
   redo(): boolean {
     const a = this.redoStack.pop();
     if (!a) return false;
-    this.applySnap(a.rec, a.after);
+    for (const en of a.entries) this.applySnap(en.rec, en.after);
     this.undoStack.push(a);
     this.emit();
     return true;
@@ -159,12 +207,10 @@ export class History {
     const rec = this.all().find((r) => r.id === id);
     if (!rec) return;
     const before = this.snapshot(rec);
-    this.applySnap(rec, { ...PRISTINE, size: { ...rec.startSize } });
+    this.applySnap(rec, { ...PRISTINE, size: { ...rec.startSize }, props: {} });
     this.undoStack.push({
-      rec,
-      before,
-      after: this.snapshot(rec),
-      coalesce: false,
+      entries: [{ rec, before, after: this.snapshot(rec) }],
+      coalesce: null,
       at: Date.now(),
     });
     this.redoStack.length = 0;
@@ -182,6 +228,8 @@ export class History {
     rec.moved = s.moved;
     rec.resized = s.resized;
     rec.deleted = s.deleted;
+    rec.props = { ...s.props };
+    rec.text = s.text;
     applyRecord(rec);
     this.cleanup(rec);
   }

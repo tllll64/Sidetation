@@ -32,6 +32,12 @@ export interface EditRecord {
   deleted: boolean;
   startSize: { w: number; h: number };
   size: { w: number; h: number };
+  /** SVG data-URL thumbnail captured before the first edit */
+  beforeSnap: string | null;
+  /** original text, only for pure-text elements (no element children) */
+  savedText: string | null;
+  /** edited text; null = unchanged */
+  text: string | null;
   /** panel-edited CSS properties (property -> new value) */
   props: Record<string, string>;
   /** original inline values of panel-edited properties, saved lazily on first touch */
@@ -47,6 +53,7 @@ export interface Snapshot {
   resized: boolean;
   deleted: boolean;
   props: Record<string, string>;
+  text: string | null;
 }
 
 export interface SidetationOptions {
