@@ -1,0 +1,36 @@
+{
+  "name": "sidetation",
+  "version": "0.1.0",
+  "description": "Drag & resize page elements like a designer, then export structured feedback for AI coding agents.",
+  "type": "module",
+  "main": "./dist/sidetation.umd.cjs",
+  "module": "./dist/sidetation.js",
+  "exports": {
+    ".": {
+      "import": "./dist/sidetation.js",
+      "require": "./dist/sidetation.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build && node scripts/snippets.mjs",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "design",
+    "drag",
+    "resize",
+    "annotation",
+    "ai-agent",
+    "visual-feedback"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

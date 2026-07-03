@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidetation Playground</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      color: #1a1d29;
+      background: #fafbfd;
+      line-height: 1.6;
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: #fff;
+      border-bottom: 1px solid #eceef3;
+    }
+    .logo { font-weight: 700; font-size: 18px; }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: #5a6072; text-decoration: none; font-size: 14px; }
+    .hero {
+      text-align: center;
+      padding: 96px 24px 72px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero h1 { font-size: 44px; line-height: 1.2; letter-spacing: -0.5px; }
+    .hero p { margin-top: 18px; color: #5a6072; font-size: 17px; }
+    .cta-group { margin-top: 32px; display: flex; gap: 12px; justify-content: center; }
+    .btn {
+      display: inline-block;
+      padding: 12px 26px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #3b6ef6; color: #fff; }
+    .btn-ghost { background: #fff; color: #1a1d29; border: 1px solid #d9dde7; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #eceef3;
+      border-radius: 14px;
+      padding: 28px 24px;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .card:nth-child(1) .card-icon { background: #ffd7a8; }
+    .card:nth-child(2) .card-icon { background: #b8e2c8; }
+    .card:nth-child(3) .card-icon { background: #c7d4ff; }
+    .card h3 { font-size: 17px; margin-bottom: 8px; }
+    .card p { color: #5a6072; font-size: 14px; }
+    .banner {
+      max-width: 960px;
+      margin: 56px auto;
+      padding: 48px;
+      background: #1a1d29;
+      color: #fff;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .banner h2 { font-size: 26px; }
+    .banner p { color: #a5abbd; margin-top: 6px; font-size: 14px; }
+    footer {
+      text-align: center;
+      color: #9aa1b2;
+      font-size: 13px;
+      padding: 40px 0 60px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo">Acme</div>
+    <div class="nav-links">
+      <a href="#">产品</a>
+      <a href="#">价格</a>
+      <a href="#">文档</a>
+      <a href="#">关于</a>
+    </div>
+    <button class="btn btn-primary">登录</button>
+  </nav>
+
+  <section class="hero">
+    <h1>随便拖拽这个页面上的任何元素</h1>
+    <p>这是 Sidetation 的演示沙盒。点击下方工具栏的「开始编辑」，然后像设计师一样：点选元素、拖动位置、拉伸大小，最后复制修改记录。</p>
+    <div class="cta-group">
+      <button class="btn btn-primary">免费开始</button>
+      <button class="btn btn-ghost">查看文档</button>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <div class="card-icon"></div>
+      <h3>拖拽移动</h3>
+      <p>选中任何元素后直接拖动，附带兄弟元素对齐吸附参考线。</p>
+    </div>
+    <div class="card">
+      <div class="card-icon"></div>
+      <h3>拉伸缩放</h3>
+      <p>八个手柄自由调整宽高，按住 Shift 锁定宽高比。</p>
+    </div>
+    <div class="card">
+      <div class="card-icon"></div>
+      <h3>导出给 AI</h3>
+      <p>一键复制结构化 Markdown 或 CSS，交给 Claude Code 落实到源码。</p>
+    </div>
+  </section>
+
+  <section class="banner">
+    <div>
+      <h2>准备好把改动交给 AI 了吗？</h2>
+      <p>复制 Markdown，粘贴给你的 coding agent，它会知道该改哪个组件。</p>
+    </div>
+    <button class="btn btn-primary">复制修改记录</button>
+  </section>
+
+  <footer>Sidetation Playground · 仅用于本地演示</footer>
+
+  <script type="module">
+    import { init } from '/src/index.ts';
+    window.sidetation = init();
+  </script>
+</body>
+</html>
