@@ -23,7 +23,9 @@ if (import.meta.env.DEV) {
 
 ## 在任意网站上测试
 
-`npm run build` 会在 `dist/` 里额外生成两个注入文件：
+**Chrome 插件（推荐给团队）**：`npm run build` 后，在 `chrome://extensions` 开启「开发者模式」→「加载已解压的扩展程序」→ 选择 `extension/` 目录。点工具栏图标即可在当前页开启/关闭编辑模式（带 ON 徽标），仅申请 `activeTab` 权限，不受页面 CSP 限制。
+
+`npm run build` 还会在 `dist/` 里额外生成两个注入文件：
 
 - **`console-paste.js`** — 打开任意网站 → DevTools 控制台 → 整个文件内容粘贴回车，工具栏立即出现并进入编辑模式。控制台执行不受页面 CSP 限制，几乎所有网站可用。
 - **`bookmarklet.txt`** — 把整段 `javascript:...` 存为浏览器书签的 URL，在任何页面点击书签即可注入。少数 CSP 严格的站点可能拦截 bookmarklet，此时退回控制台方式。

@@ -116,8 +116,8 @@
 
     <section id="install">
       <div class="kicker">Install</div>
-      <h2>三种方式，10 秒用上</h2>
-      <p class="section-sub">自己的项目用 npm 包；别人的网站用控制台粘贴或书签一键注入。</p>
+      <h2>四种方式，10 秒用上</h2>
+      <p class="section-sub">自己的项目用 npm 包；别人的网站用 Chrome 插件、控制台粘贴或书签注入。</p>
 
       <div class="install-card">
         <h3>npm 包（推荐，开发环境）</h3>
@@ -127,6 +127,22 @@
 
 <span class="c-h">if</span> (import.meta.env.DEV) init();</pre>
         <p class="note">npm 包正在发布中；发布前可用下方的 GitHub 构建方式提前体验。</p>
+      </div>
+
+      <div class="install-card">
+        <h3>Chrome 插件（任意网站，推荐给团队）</h3>
+        <p>
+          点击工具栏图标即可在当前页开启 / 关闭编辑模式，带 ON 状态徽标。仅申请
+          <code class="inline">activeTab</code> 权限——只在你主动点击时注入当前页，无「读取所有网站」类敏感权限。
+        </p>
+        <div class="cmd">
+          <span>git clone https://github.com/tllll64/Sidetation.git &amp;&amp; cd Sidetation &amp;&amp; npm install &amp;&amp; npm run build</span>
+          <button data-copy="git clone https://github.com/tllll64/Sidetation.git && cd Sidetation && npm install && npm run build">复制</button>
+        </div>
+        <p class="note">
+          构建后打开 <code class="inline">chrome://extensions</code> → 开启「开发者模式」→「加载已解压的扩展程序」→
+          选择仓库里的 <code class="inline">extension/</code> 目录即可。Chrome Web Store 上架版本筹备中。
+        </p>
       </div>
 
       <div class="install-card">

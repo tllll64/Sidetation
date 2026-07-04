@@ -16,6 +16,9 @@ writeFileSync(resolve(root, 'dist/console-paste.js'), consolePaste);
 const bookmarklet = 'javascript:' + encodeURIComponent(consolePaste);
 writeFileSync(resolve(root, 'dist/bookmarklet.txt'), bookmarklet);
 
+// keep the Chrome extension's bundle in sync with every build
+writeFileSync(resolve(root, 'extension/sidetation.js'), umd);
+
 console.log(
   `snippets written: console-paste.js (${(consolePaste.length / 1024).toFixed(1)} kB), ` +
     `bookmarklet.txt (${(bookmarklet.length / 1024).toFixed(1)} kB)`

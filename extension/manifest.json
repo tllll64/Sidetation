@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Sidetation",
+  "version": "0.4.0",
+  "description": "像设计师一样拖拽网页元素，导出结构化修改记录给 AI。点击图标开启/关闭编辑模式。",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_title": "Sidetation：开启 / 关闭编辑模式",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

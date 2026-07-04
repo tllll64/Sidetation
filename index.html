@@ -142,6 +142,18 @@
   <script type="module">
     import { init } from '/src/index.ts';
     window.sidetation = init();
+
+    // ?shot: auto-activate and select an element, for store screenshots
+    if (location.search.includes('shot')) {
+      window.sidetation.activate();
+      setTimeout(() => {
+        const btn = document.querySelector('.hero .btn-primary');
+        const r = btn.getBoundingClientRect();
+        const x = r.left + r.width / 2, y = r.top + r.height / 2;
+        btn.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, bubbles: true, composed: true }));
+        window.dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y, bubbles: true }));
+      }, 300);
+    }
   </script>
 </body>
 </html>

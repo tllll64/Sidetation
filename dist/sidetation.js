@@ -1428,6 +1428,9 @@ class pt {
   getCSS() {
     return O(this.history.all());
   }
+  get isActive() {
+    return this.active;
+  }
   undo() {
     return this.history.undo();
   }

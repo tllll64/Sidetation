@@ -18,6 +18,7 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build && node scripts/snippets.mjs",
+    "package:ext": "npm run build && cd extension && zip -rq ../dist/sidetation-extension.zip . -x '.*' && echo 'dist/sidetation-extension.zip ready'",
     "preview": "vite preview"
   },
   "keywords": [

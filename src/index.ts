@@ -572,6 +572,10 @@ export class Sidetation {
     return toCSS(this.history.all());
   }
 
+  get isActive(): boolean {
+    return this.active;
+  }
+
   undo(): boolean {
     return this.history.undo();
   }
