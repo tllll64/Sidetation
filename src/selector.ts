@@ -40,13 +40,23 @@ function matchesOnly(sel: string, el: Element): boolean {
   }
 }
 
-export function generateSelector(el: Element): string {
-  const id = stableId(el);
-  if (id) {
-    const sel = `#${CSS.escape(id)}`;
-    if (matchesOnly(sel, el)) return sel;
-  }
+/** segment() plus :nth-of-type, but only when siblings of the same tag actually need it */
+function segmentWithPosition(el: Element): string {
+  const base = segment(el);
+  const parent = el.parentElement;
+  if (!parent) return base;
+  const sameTag = Array.from(parent.children).filter((c) => c.tagName === el.tagName);
+  if (sameTag.length <= 1) return base;
+  return `${base}:nth-of-type(${sameTag.indexOf(el) + 1})`;
+}
 
+/**
+ * Walk up from el building a selector one ancestor at a time, returning as
+ * soon as it uniquely matches. `withPosition` escalates every level to
+ * :nth-of-type, needed when repeated sibling structures (card grids, list
+ * items) make the plain tag/class chain ambiguous at every level.
+ */
+function buildChain(el: Element, withPosition: boolean): string | null {
   const parts: string[] = [];
   let cur: Element | null = el;
   while (cur && cur !== document.body && cur !== document.documentElement && parts.length < 5) {
@@ -57,20 +67,33 @@ export function generateSelector(el: Element): string {
       if (matchesOnly(sel, el)) return sel;
       break;
     }
-    parts.unshift(segment(cur));
+    parts.unshift(withPosition ? segmentWithPosition(cur) : segment(cur));
     const sel = parts.join(' > ');
     if (matchesOnly(sel, el)) return sel;
     cur = cur.parentElement;
   }
+  return null;
+}
 
-  // disambiguate the leaf with :nth-of-type
-  const parent = el.parentElement;
-  if (parent) {
-    const sameTag = Array.from(parent.children).filter((c) => c.tagName === el.tagName);
-    const idx = sameTag.indexOf(el) + 1;
-    const withNth = [...parts.slice(0, -1), `${segment(el)}:nth-of-type(${idx})`].join(' > ');
-    if (matchesOnly(withNth, el)) return withNth;
-    return withNth;
+export function generateSelector(el: Element): string {
+  const id = stableId(el);
+  if (id) {
+    const sel = `#${CSS.escape(id)}`;
+    if (matchesOnly(sel, el)) return sel;
+  }
+
+  const plain = buildChain(el, false);
+  if (plain) return plain;
+
+  const positional = buildChain(el, true);
+  if (positional) return positional;
+
+  // last resort (>5 ancestors of repeated structure): best-effort positional chain
+  const parts: string[] = [];
+  let cur: Element | null = el;
+  while (cur && cur !== document.body && cur !== document.documentElement && parts.length < 5) {
+    parts.unshift(segmentWithPosition(cur));
+    cur = cur.parentElement;
   }
   return parts.join(' > ');
 }

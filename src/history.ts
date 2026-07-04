@@ -2,6 +2,7 @@ import type { EditRecord, Snapshot } from './types';
 import { generateSelector } from './selector';
 import { applyRecord } from './apply';
 import { snapshotSVG } from './snapshot';
+import type { PersistedRecord } from './persist';
 
 interface ActionEntry {
   rec: EditRecord;
@@ -238,6 +239,42 @@ export class History {
   private cleanup(rec: EditRecord): void {
     if (isPristine(rec)) this.records.delete(rec.el);
     else this.records.set(rec.el, rec);
+  }
+
+  /**
+   * Re-apply a previously saved session after a page refresh: re-resolve each
+   * selector, splice the persisted state onto a freshly `ensure()`d record.
+   * Returns the count of entries whose selector no longer resolves uniquely.
+   */
+  restore(persisted: PersistedRecord[]): number {
+    let failed = 0;
+    for (const p of persisted) {
+      let found: NodeListOf<Element>;
+      try {
+        found = document.querySelectorAll(p.selector);
+      } catch {
+        failed++;
+        continue;
+      }
+      if (found.length !== 1) {
+        failed++;
+        continue;
+      }
+      const rec = this.ensure(found[0] as HTMLElement);
+      rec.dx = p.dx;
+      rec.dy = p.dy;
+      rec.moved = p.moved;
+      rec.resized = p.resized;
+      rec.deleted = p.deleted;
+      rec.startSize = { ...p.startSize };
+      rec.size = { ...p.size };
+      rec.text = p.text;
+      rec.props = { ...p.props };
+      rec.savedProps = { ...p.savedProps };
+      applyRecord(rec);
+      this.cleanup(rec);
+    }
+    return failed;
   }
 
   /** drop records that were ensure()d but never turned into a real edit */

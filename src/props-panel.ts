@@ -97,22 +97,26 @@ export class PropsPanel {
     return r;
   }
 
-  private num(parent: HTMLElement, onInput: (n: number) => void, min = 0): HTMLInputElement {
+  private num(parent: HTMLElement, onChange: (n: number) => void, min = 0): HTMLInputElement {
     const i = document.createElement('input');
     i.type = 'number';
     i.min = String(min);
-    i.addEventListener('input', () => {
+    const commit = (): void => {
       const n = parseFloat(i.value);
-      if (!Number.isNaN(n)) onInput(n);
+      if (!Number.isNaN(n)) onChange(n);
+    };
+    i.addEventListener('change', commit);
+    i.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { commit(); i.blur(); }
     });
     parent.append(i);
     return i;
   }
 
-  private color(parent: HTMLElement, onInput: (hex: string) => void): HTMLInputElement {
+  private color(parent: HTMLElement, onChange: (hex: string) => void): HTMLInputElement {
     const i = document.createElement('input');
     i.type = 'color';
-    i.addEventListener('input', () => onInput(i.value));
+    i.addEventListener('change', () => onChange(i.value));
     parent.append(i);
     return i;
   }
