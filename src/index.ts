@@ -7,19 +7,25 @@ import { computeSnap } from './snap';
 import { shortLabel } from './selector';
 import { toMarkdown, toCSS } from './export';
 import { applyRecord } from './apply';
+import { save as persistSave, load as persistLoad } from './persist';
+import { AlignPanel, type AlignMode } from './align-panel';
 
 export type { SidetationOptions, EditRecord } from './types';
 
 const DRAG_THRESHOLD = 3;
 
-interface DragState {
-  el: HTMLElement;
-  startX: number;
-  startY: number;
-  rec: EditRecord | null;
-  before: Snapshot | null;
+interface DragItem {
+  rec: EditRecord;
+  before: Snapshot;
   baseDx: number;
   baseDy: number;
+}
+
+interface DragState {
+  els: HTMLElement[];
+  startX: number;
+  startY: number;
+  items: DragItem[] | null;
   moved: boolean;
   downTarget: HTMLElement;
 }
@@ -48,11 +54,12 @@ export class Sidetation {
   private history = new History();
   private toolbar: Toolbar;
   private propsPanel: PropsPanel;
+  private alignPanel: AlignPanel;
   private opts: Required<SidetationOptions>;
 
   private active = false;
   private hovered: HTMLElement | null = null;
-  private selected: HTMLElement | null = null;
+  private selected: HTMLElement[] = [];
   private drag: DragState | null = null;
   private resize: ResizeState | null = null;
   private textEdit: TextEditState | null = null;
@@ -74,10 +81,28 @@ export class Sidetation {
       setProps: (entries) => this.panelSetProps(entries),
       setSize: (w, h) => this.panelSetSize(w, h),
     });
-    this.history.onChange = () => this.syncUI();
+    this.alignPanel = new AlignPanel(this.overlay.alignEl, {
+      align: (mode) => this.alignSelected(mode),
+      distribute: (axis) => this.distributeSelected(axis),
+    });
+    this.history.onChange = () => {
+      this.syncUI();
+      persistSave(this.history.all());
+    };
     this.overlay.onHandleDown = (dir, e) => this.startResize(dir, e);
+    this.restoreSession();
     this.syncUI();
     if (this.opts.autoStart) this.activate();
+  }
+
+  /** re-apply edits saved from a previous session on this page, if any */
+  private restoreSession(): void {
+    const persisted = persistLoad();
+    if (!persisted || persisted.length === 0) return;
+    const failed = this.history.restore(persisted);
+    if (failed > 0) {
+      this.overlay.toast(`${failed} 处修改因页面结构变化未能恢复`);
+    }
   }
 
   // ---------- lifecycle ----------
@@ -111,12 +136,14 @@ export class Sidetation {
     window.removeEventListener('keydown', this.onKeyDown, true);
     cancelAnimationFrame(this.rafId);
     this.hovered = null;
-    this.selected = null;
+    this.selected = [];
     this.drag = null;
     this.resize = null;
     this.propsPanel.setTarget(null);
+    this.alignPanel.hide();
     this.overlay.setHover(null);
     this.overlay.setSelection(null);
+    this.overlay.setMultiSelection([]);
     this.overlay.setGuides(null, null);
     this.syncUI();
   }
@@ -131,15 +158,31 @@ export class Sidetation {
 
   /** keep boxes glued to their elements through scroll/layout changes */
   private loop = (): void => {
-    if (this.selected && this.selected.isConnected) {
-      const rect = this.selected.getBoundingClientRect();
+    if (this.selected.length > 0) {
+      const connected = this.selected.filter((el) => el.isConnected);
+      if (connected.length !== this.selected.length) this.selected = connected;
+    }
+
+    if (this.selected.length === 1) {
+      const el = this.selected[0];
+      const rect = el.getBoundingClientRect();
       this.overlay.setSelection(rect, this.selectionLabel());
       this.propsPanel.refreshRect(rect);
-    } else {
-      if (this.selected) this.selected = null;
+      this.overlay.setMultiSelection([]);
+      this.alignPanel.hide();
+    } else if (this.selected.length > 1) {
+      const rects = this.selected.map((el) => el.getBoundingClientRect());
       this.overlay.setSelection(null);
+      this.overlay.setMultiSelection(rects);
+      this.overlay.positionAlignPanel(rects);
+      this.alignPanel.show(this.selected.length);
+    } else {
+      this.overlay.setSelection(null);
+      this.overlay.setMultiSelection([]);
+      this.alignPanel.hide();
     }
-    if (this.hovered && this.hovered.isConnected && this.hovered !== this.selected) {
+
+    if (this.hovered && this.hovered.isConnected && !this.selected.includes(this.hovered)) {
       this.overlay.setHover(this.hovered.getBoundingClientRect());
     } else {
       this.overlay.setHover(null);
@@ -148,9 +191,10 @@ export class Sidetation {
   };
 
   private selectionLabel(): string {
-    if (!this.selected) return '';
-    const r = this.selected.getBoundingClientRect();
-    return `${shortLabel(this.selected)}  ${Math.round(r.width)}×${Math.round(r.height)}`;
+    if (this.selected.length !== 1) return '';
+    const el = this.selected[0];
+    const r = el.getBoundingClientRect();
+    return `${shortLabel(el)}  ${Math.round(r.width)}×${Math.round(r.height)}`;
   }
 
   // ---------- element picking ----------
@@ -168,10 +212,22 @@ export class Sidetation {
     return e.composedPath().includes(this.overlay.host);
   }
 
-  private select(el: HTMLElement | null): void {
-    this.selected = el;
+  private select(els: HTMLElement[]): void {
+    this.selected = els;
     this.hovered = null;
-    this.propsPanel.setTarget(el);
+    this.propsPanel.setTarget(els.length === 1 ? els[0] : null);
+  }
+
+  /** Shift+click: add/remove one element from the current selection */
+  private toggleSelect(el: HTMLElement): void {
+    const idx = this.selected.indexOf(el);
+    if (idx >= 0) {
+      const next = this.selected.slice();
+      next.splice(idx, 1);
+      this.select(next);
+    } else {
+      this.select([...this.selected, el]);
+    }
   }
 
   private isSelectable(el: Element | null): el is HTMLElement {
@@ -215,15 +271,23 @@ export class Sidetation {
     e.preventDefault();
     e.stopPropagation();
 
-    // Alt+click drills up to the parent of the current selection
-    if (e.altKey && this.selected) {
-      if (this.isSelectable(this.selected.parentElement)) this.select(this.selected.parentElement);
+    // Alt+click drills up to the parent of the current selection (single-select only)
+    if (e.altKey && this.selected.length === 1) {
+      const parent = this.selected[0].parentElement;
+      if (this.isSelectable(parent)) this.select([parent]);
       return;
     }
 
     const target = this.pageElementAt(e.clientX, e.clientY);
     if (!target) {
-      this.select(null);
+      this.select([]);
+      return;
+    }
+
+    // Shift+click toggles the element in/out of a multi-selection; it never
+    // starts a drag, keeping the gesture unambiguous
+    if (e.shiftKey) {
+      this.toggleSelect(target);
       return;
     }
 
@@ -237,21 +301,18 @@ export class Sidetation {
     this.lastDownAt = now;
     this.lastDownTarget = target;
 
-    const withinSelection =
-      this.selected !== null && (target === this.selected || this.selected.contains(target));
-    if (!withinSelection) this.select(target);
+    const single = this.selected.length === 1 ? this.selected[0] : null;
+    const withinSelection = single !== null && (target === single || single.contains(target));
+    const inGroup = this.selected.length > 1 && this.selected.includes(target);
+    if (!withinSelection && !inGroup) this.select([target]);
 
-    // Dragging anywhere inside the selection moves the selection; a plain
-    // click (no movement) on a descendant re-selects that descendant.
-    const el = this.selected!;
+    // Dragging anywhere inside the selection moves the whole selection; a
+    // plain click (no movement) on a descendant re-selects just that descendant.
     this.drag = {
-      el,
+      els: this.selected,
       startX: e.clientX,
       startY: e.clientY,
-      rec: null,
-      before: null,
-      baseDx: 0,
-      baseDy: 0,
+      items: null,
       moved: false,
       downTarget: target,
     };
@@ -270,10 +331,10 @@ export class Sidetation {
       this.drag = null;
       this.overlay.setGuides(null, null);
       document.documentElement.style.cursor = '';
-      if (d.moved && d.rec && d.before) {
-        this.history.commit(d.rec, d.before);
-      } else if (d.downTarget !== this.selected) {
-        this.select(d.downTarget); // click on a child selects the child
+      if (d.moved && d.items) {
+        this.history.commitBatch(d.items.map(({ rec, before }) => ({ rec, before })));
+      } else if (!(this.selected.length === 1 && this.selected[0] === d.downTarget)) {
+        this.select([d.downTarget]); // click without dragging refines to the clicked descendant
       }
       e.preventDefault();
       e.stopPropagation();
@@ -294,7 +355,7 @@ export class Sidetation {
       this.overlay.toast('仅支持纯文本元素（无子元素）');
       return;
     }
-    this.select(el);
+    this.select([el]);
     const rec = this.history.ensure(el);
     this.textEdit = {
       el,
@@ -335,43 +396,57 @@ export class Sidetation {
     if (!d.moved) {
       if (Math.hypot(rawDx, rawDy) < DRAG_THRESHOLD) return;
       d.moved = true;
-      d.rec = this.history.ensure(d.el);
-      d.before = this.history.snapshot(d.rec);
-      d.baseDx = d.rec.dx;
-      d.baseDy = d.rec.dy;
+      d.items = d.els.map((el) => {
+        const rec = this.history.ensure(el);
+        return { rec, before: this.history.snapshot(rec), baseDx: rec.dx, baseDy: rec.dy };
+      });
       document.documentElement.style.cursor = 'move';
     }
-    const rec = d.rec!;
-    let dx = d.baseDx + rawDx;
-    let dy = d.baseDy + rawDy;
+    const items = d.items!;
 
-    // snap against siblings/parent using the proposed (un-snapped) rect
-    const cur = d.el.getBoundingClientRect();
-    const proposed = {
-      left: cur.left + (dx - rec.dx),
-      top: cur.top + (dy - rec.dy),
-      width: cur.width,
-      height: cur.height,
-    };
-    const snap = computeSnap(d.el, proposed, this.opts.snapThreshold);
-    dx += snap.adjX;
-    dy += snap.adjY;
-    this.overlay.setGuides(snap.guideV, snap.guideH);
+    if (items.length === 1) {
+      const { rec, baseDx, baseDy } = items[0];
+      let dx = baseDx + rawDx;
+      let dy = baseDy + rawDy;
 
-    rec.dx = dx;
-    rec.dy = dy;
-    rec.moved = true;
-    applyRecord(rec);
+      // snap against siblings/parent using the proposed (un-snapped) rect
+      const cur = d.els[0].getBoundingClientRect();
+      const proposed = {
+        left: cur.left + (dx - rec.dx),
+        top: cur.top + (dy - rec.dy),
+        width: cur.width,
+        height: cur.height,
+      };
+      const snap = computeSnap(d.els[0], proposed, this.opts.snapThreshold);
+      dx += snap.adjX;
+      dy += snap.adjY;
+      this.overlay.setGuides(snap.guideV, snap.guideH);
+
+      rec.dx = dx;
+      rec.dy = dy;
+      rec.moved = true;
+      applyRecord(rec);
+    } else {
+      // multi-select: move the whole group by the same raw delta, no snapping
+      this.overlay.setGuides(null, null);
+      for (const { rec, baseDx, baseDy } of items) {
+        rec.dx = baseDx + rawDx;
+        rec.dy = baseDy + rawDy;
+        rec.moved = true;
+        applyRecord(rec);
+      }
+    }
   }
 
   // ---------- resize ----------
 
   private startResize(dir: Dir, e: PointerEvent): void {
-    if (!this.selected) return;
+    if (this.selected.length !== 1) return;
+    const el = this.selected[0];
     e.preventDefault();
     e.stopPropagation();
-    const rec = this.history.ensure(this.selected);
-    const r = this.selected.getBoundingClientRect();
+    const rec = this.history.ensure(el);
+    const r = el.getBoundingClientRect();
     this.resize = {
       rec,
       before: this.history.snapshot(rec),
@@ -440,7 +515,7 @@ export class Sidetation {
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
-      if (this.selected) this.select(null);
+      if (this.selected.length > 0) this.select([]);
       else this.deactivate();
       return;
     }
@@ -454,44 +529,49 @@ export class Sidetation {
       return;
     }
 
-    if (!this.selected) return;
+    if (this.selected.length === 0) return;
 
-    // Delete / Backspace removes the element (recorded, undoable)
+    // Delete / Backspace removes the selection (recorded as one undoable batch)
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
       e.stopPropagation();
-      const rec = this.history.ensure(this.selected);
-      const before = this.history.snapshot(rec);
-      rec.deleted = true;
-      this.select(null);
-      this.history.commit(rec, before);
-      this.overlay.toast('已删除（⌘Z 撤销）');
+      const count = this.selected.length;
+      const items = this.selected.map((el) => {
+        const rec = this.history.ensure(el);
+        const before = this.history.snapshot(rec);
+        rec.deleted = true;
+        return { rec, before };
+      });
+      this.select([]);
+      this.history.commitBatch(items);
+      this.overlay.toast(count > 1 ? `已删除 ${count} 个元素（⌘Z 撤销）` : '已删除（⌘Z 撤销）');
       return;
     }
 
-    // Enter drills into the first child, Shift+Enter back to the parent
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      const next = e.shiftKey
-        ? this.selected.parentElement
-        : this.selected.firstElementChild;
-      if (this.isSelectable(next)) this.select(next);
-      return;
+    if (this.selected.length === 1) {
+      const el = this.selected[0];
+
+      // Enter drills into the first child, Shift+Enter back to the parent
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        const next = e.shiftKey ? el.parentElement : el.firstElementChild;
+        if (this.isSelectable(next)) this.select([next]);
+        return;
+      }
+
+      // Tab / Shift+Tab walks between siblings
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        e.stopPropagation();
+        const next = e.shiftKey ? el.previousElementSibling : el.nextElementSibling;
+        if (this.isSelectable(next)) this.select([next]);
+        return;
+      }
     }
 
-    // Tab / Shift+Tab walks between siblings
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      e.stopPropagation();
-      const next = e.shiftKey
-        ? this.selected.previousElementSibling
-        : this.selected.nextElementSibling;
-      if (this.isSelectable(next)) this.select(next);
-      return;
-    }
-
-    // arrow-key nudging (1px, Shift = 10px), coalesced on the undo stack
+    // arrow-key nudging (1px, Shift = 10px) moves the whole selection,
+    // coalesced on the undo stack
     const step = e.shiftKey ? 10 : 1;
     const nudge: Record<string, [number, number]> = {
       ArrowLeft: [-step, 0],
@@ -503,24 +583,28 @@ export class Sidetation {
     if (!delta) return;
     e.preventDefault();
     e.stopPropagation();
-    const rec = this.history.ensure(this.selected);
-    const before = this.history.snapshot(rec);
-    rec.dx += delta[0];
-    rec.dy += delta[1];
-    rec.moved = true;
-    this.history.commit(rec, before, { coalesce: 'nudge' });
+    const items = this.selected.map((el) => {
+      const rec = this.history.ensure(el);
+      const before = this.history.snapshot(rec);
+      rec.dx += delta[0];
+      rec.dy += delta[1];
+      rec.moved = true;
+      return { rec, before };
+    });
+    this.history.commitBatch(items, { coalesce: 'nudge' });
   };
 
   // ---------- properties panel ----------
 
   private panelSetProps(entries: Record<string, string | null>): void {
-    if (!this.selected) return;
+    if (this.selected.length !== 1) return;
+    const el = this.selected[0];
     this.commitTextEdit();
-    const rec = this.history.ensure(this.selected);
+    const rec = this.history.ensure(el);
     const before = this.history.snapshot(rec);
     for (const [prop, value] of Object.entries(entries)) {
       if (!(prop in rec.savedProps)) {
-        rec.savedProps[prop] = this.selected.style.getPropertyValue(prop);
+        rec.savedProps[prop] = el.style.getPropertyValue(prop);
       }
       if (value === null) delete rec.props[prop];
       else rec.props[prop] = value;
@@ -530,14 +614,100 @@ export class Sidetation {
   }
 
   private panelSetSize(w: number | null, h: number | null): void {
-    if (!this.selected) return;
+    if (this.selected.length !== 1) return;
     this.commitTextEdit();
-    const rec = this.history.ensure(this.selected);
+    const rec = this.history.ensure(this.selected[0]);
     const before = this.history.snapshot(rec);
     if (w !== null) rec.size.w = Math.max(8, w);
     if (h !== null) rec.size.h = Math.max(8, h);
     rec.resized = true;
     this.history.commit(rec, before, { coalesce: 'size' });
+  }
+
+  // ---------- multi-select: align / distribute ----------
+
+  private alignSelected(mode: AlignMode): void {
+    if (this.selected.length < 2) return;
+    const items = this.selected.map((el) => ({
+      rec: this.history.ensure(el),
+      rect: el.getBoundingClientRect(),
+    }));
+    const before = items.map(({ rec }) => ({ rec, before: this.history.snapshot(rec) }));
+
+    const left = Math.min(...items.map((i) => i.rect.left));
+    const right = Math.max(...items.map((i) => i.rect.right));
+    const top = Math.min(...items.map((i) => i.rect.top));
+    const bottom = Math.max(...items.map((i) => i.rect.bottom));
+    const hCenter = (left + right) / 2;
+    const vCenter = (top + bottom) / 2;
+
+    for (const { rec, rect } of items) {
+      let dx = 0;
+      let dy = 0;
+      switch (mode) {
+        case 'left':
+          dx = left - rect.left;
+          break;
+        case 'right':
+          dx = right - rect.right;
+          break;
+        case 'hcenter':
+          dx = hCenter - (rect.left + rect.width / 2);
+          break;
+        case 'top':
+          dy = top - rect.top;
+          break;
+        case 'bottom':
+          dy = bottom - rect.bottom;
+          break;
+        case 'vcenter':
+          dy = vCenter - (rect.top + rect.height / 2);
+          break;
+      }
+      if (dx !== 0 || dy !== 0) {
+        rec.dx += dx;
+        rec.dy += dy;
+        rec.moved = true;
+        applyRecord(rec);
+      }
+    }
+    this.history.commitBatch(before);
+  }
+
+  private distributeSelected(axis: 'h' | 'v'): void {
+    if (this.selected.length < 3) return;
+    const items = this.selected.map((el) => ({
+      rec: this.history.ensure(el),
+      rect: el.getBoundingClientRect(),
+    }));
+    const before = items.map(({ rec }) => ({ rec, before: this.history.snapshot(rec) }));
+
+    const sorted = [...items].sort((a, b) =>
+      axis === 'h' ? a.rect.left - b.rect.left : a.rect.top - b.rect.top
+    );
+    const first = sorted[0].rect;
+    const last = sorted[sorted.length - 1].rect;
+    const span = axis === 'h' ? last.right - first.left : last.bottom - first.top;
+    const totalSize = sorted.reduce(
+      (s, i) => s + (axis === 'h' ? i.rect.width : i.rect.height),
+      0
+    );
+    const gap = (span - totalSize) / (sorted.length - 1);
+
+    let pos = axis === 'h' ? first.left : first.top;
+    for (const { rec, rect } of sorted) {
+      const size = axis === 'h' ? rect.width : rect.height;
+      const current = axis === 'h' ? rect.left : rect.top;
+      const delta = pos - current;
+      if (delta !== 0) {
+        if (axis === 'h') rec.dx += delta;
+        else rec.dy += delta;
+        rec.moved = true;
+        applyRecord(rec);
+      }
+      pos += size + gap;
+    }
+    this.history.commitBatch(before);
   }
 
   // ---------- output ----------

@@ -11,15 +11,18 @@ const DIRS: Dir[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
  */
 export class Overlay {
   readonly host = document.createElement('div');
+  private shadow: ShadowRoot;
   private hoverBox: HTMLElement;
   private selBox: HTMLElement;
   private selLabel: HTMLElement;
+  private multiBoxes: HTMLElement[] = [];
   private guideV: HTMLElement;
   private guideH: HTMLElement;
   private toastEl: HTMLElement;
   readonly toolbarEl: HTMLElement;
   readonly panelEl: HTMLElement;
   readonly propsEl: HTMLElement;
+  readonly alignEl: HTMLElement;
   readonly shortcutsEl: HTMLElement;
   onHandleDown: ((dir: Dir, e: PointerEvent) => void) | null = null;
   private toastTimer = 0;
@@ -33,6 +36,7 @@ export class Overlay {
       pointerEvents: 'none',
     });
     const shadow = this.host.attachShadow({ mode: 'open' });
+    this.shadow = shadow;
 
     const style = document.createElement('style');
     style.textContent = STYLES;
@@ -61,6 +65,7 @@ export class Overlay {
     this.guideH = div('guide guide-h');
     this.panelEl = div('panel');
     this.propsEl = div('props');
+    this.alignEl = div('align-panel');
     this.shortcutsEl = div('shortcuts');
     this.toolbarEl = div('toolbar');
     this.toastEl = div('toast');
@@ -87,6 +92,27 @@ export class Overlay {
   setSelection(r: DOMRect | null, label = ''): void {
     this.place(this.selBox, r);
     if (r) this.selLabel.textContent = label;
+  }
+
+  /** plain highlight boxes (no handles) for a multi-selection */
+  setMultiSelection(rects: DOMRect[]): void {
+    while (this.multiBoxes.length < rects.length) {
+      const b = document.createElement('div');
+      b.className = 'multi-box';
+      this.shadow.append(b);
+      this.multiBoxes.push(b);
+    }
+    this.multiBoxes.forEach((b, i) => this.place(b, rects[i] ?? null));
+  }
+
+  /** float the align/distribute panel above the selection's bounding box */
+  positionAlignPanel(rects: DOMRect[]): void {
+    if (rects.length === 0) return;
+    const left = Math.min(...rects.map((r) => r.left));
+    const right = Math.max(...rects.map((r) => r.right));
+    const top = Math.min(...rects.map((r) => r.top));
+    this.alignEl.style.left = `${(left + right) / 2}px`;
+    this.alignEl.style.top = `${Math.max(0, top)}px`;
   }
 
   setGuides(v: number | null, h: number | null): void {

@@ -56,6 +56,16 @@ export const STYLES = `
 .handle[data-dir="sw"] { bottom: -6px; left: -6px; cursor: nesw-resize; }
 .handle[data-dir="w"]  { top: calc(50% - 5px); left: -6px; cursor: ew-resize; }
 
+/* ---- multi-selection boxes (no handles) ---- */
+.multi-box {
+  position: fixed;
+  display: none;
+  pointer-events: none;
+  border: 1.5px solid #4f8cff;
+  background: rgba(79, 140, 255, 0.06);
+  z-index: 2;
+}
+
 /* ---- alignment guides ---- */
 .guide {
   position: fixed;
@@ -431,6 +441,46 @@ export const STYLES = `
   cursor: pointer;
 }
 .props .check input { accent-color: #4f8cff; }
+
+/* ---- align / distribute panel (multi-select) ---- */
+.align-panel {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 12px));
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  background: #1c1e26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  padding: 10px 12px;
+  pointer-events: auto;
+  z-index: 9;
+}
+.align-panel.open { display: flex; }
+.align-title {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 600;
+}
+.align-row {
+  display: flex;
+  gap: 4px;
+}
+.align-row button {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #12141b;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.align-row button:hover { border-color: #4f8cff; color: #fff; }
+.align-row button:disabled { opacity: 0.35; cursor: default; }
+.align-row button:disabled:hover { border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); }
 
 /* ---- toast ---- */
 .toast {
