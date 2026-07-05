@@ -5,6 +5,7 @@ export interface ToolbarCallbacks {
   onToggle(): void;
   onCopyMd(): void;
   onCopyCss(): void;
+  onSync(): void;
   onReset(): void;
   onRevert(id: number): void;
 }
@@ -31,23 +32,39 @@ export class Toolbar {
   private editsBtn: HTMLButtonElement;
   private mdBtn: HTMLButtonElement;
   private cssBtn: HTMLButtonElement;
+  private syncBtn?: HTMLButtonElement;
   private resetBtn: HTMLButtonElement;
   private kbdBtn: HTMLButtonElement;
+  private brandEl: HTMLElement;
   private panelOpen = false;
+  private active = false;
   private records: EditRecord[] = [];
 
   constructor(
-    bar: HTMLElement,
+    private bar: HTMLElement,
     private panel: HTMLElement,
     private shortcuts: HTMLElement,
-    private cb: ToolbarCallbacks
+    private cb: ToolbarCallbacks,
+    showMcpSync = false
   ) {
     const brand = document.createElement('div');
     brand.className = 'brand';
+    brand.setAttribute('role', 'button');
     const dot = document.createElement('span');
     dot.className = 'brand-dot';
     brand.append(dot, 'Sidetation');
     bar.append(brand);
+    this.brandEl = brand;
+    // collapsed state: the brand IS the "start editing" affordance
+    brand.addEventListener('click', () => {
+      if (!this.active) this.cb.onToggle();
+    });
+    brand.addEventListener('keydown', (e) => {
+      if (!this.active && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        this.cb.onToggle();
+      }
+    });
 
     const btn = (label: string, onClick: () => void): HTMLButtonElement => {
       const b = document.createElement('button');
@@ -90,6 +107,20 @@ export class Toolbar {
     divider();
     this.mdBtn = btn('复制 Markdown', () => cb.onCopyMd());
     this.cssBtn = btn('复制 CSS', () => cb.onCopyCss());
+    // MCP sync is opt-in: only rendered when the host enables it, so users
+    // without the local MCP bridge never see a button that would just fail
+    if (showMcpSync) {
+      this.syncBtn = btn('同步 MCP', () => cb.onSync());
+      this.syncBtn.title = '把当前修改推送到本地 MCP 服务，供 AI 编码助手读取';
+    }
+  }
+
+  /** reflect the in-flight sync request on the button */
+  setSyncState(state: 'idle' | 'syncing'): void {
+    if (!this.syncBtn) return;
+    const syncing = state === 'syncing';
+    this.syncBtn.textContent = syncing ? '同步中…' : '同步 MCP';
+    this.syncBtn.disabled = syncing || this.records.length === 0;
   }
 
   private buildShortcuts(): void {
@@ -161,6 +192,11 @@ export class Toolbar {
 
   update(active: boolean, records: EditRecord[]): void {
     this.records = records;
+    this.active = active;
+    // inactive: collapse to just the brand; the brand becomes the start button
+    this.bar.classList.toggle('collapsed', !active);
+    this.brandEl.setAttribute('tabindex', active ? '-1' : '0');
+    this.brandEl.title = active ? '' : '开始编辑';
     this.toggleBtn.textContent = active ? '完成' : '开始编辑';
     this.toggleBtn.classList.toggle('active', active);
     this.kbdBtn.style.display = active ? '' : 'none';
@@ -171,6 +207,7 @@ export class Toolbar {
     this.resetBtn.disabled = none;
     this.mdBtn.disabled = none;
     this.cssBtn.disabled = none;
+    if (this.syncBtn) this.syncBtn.disabled = none;
     if (none && this.panelOpen) this.togglePanel();
     else if (this.panelOpen) this.renderPanel();
   }

@@ -152,6 +152,23 @@ export const STYLES = `
   height: 14px;
 }
 
+/* ---- collapsed (inactive) toolbar: only the brand shows, click to start ---- */
+.toolbar { transition: gap 0.16s ease, padding 0.16s ease; }
+.toolbar.collapsed { gap: 0; padding: 5px 6px; }
+.toolbar.collapsed > *:not(.brand) { display: none !important; }
+.toolbar.collapsed .brand {
+  cursor: pointer;
+  padding: 5px 12px 5px 10px;
+  border-radius: 999px;
+  outline: none;
+  transition: background 0.15s ease;
+}
+.toolbar.collapsed .brand:hover { background: rgba(255, 255, 255, 0.09); }
+.toolbar.collapsed .brand:active { background: rgba(255, 255, 255, 0.14); }
+.toolbar.collapsed .brand:focus-visible { box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.6); }
+.toolbar.collapsed .brand-dot { transition: transform 0.15s ease; }
+.toolbar.collapsed .brand:hover .brand-dot { transform: rotate(45deg) scale(1.15); }
+
 /* ---- shortcuts cheat-sheet (hover popover) ---- */
 .shortcuts {
   position: fixed;
