@@ -1,4 +1,4 @@
-const ct = `
+const ht = `
 :host {
   all: initial;
 }
@@ -151,6 +151,23 @@ const ct = `
   width: 14px;
   height: 14px;
 }
+
+/* ---- collapsed (inactive) toolbar: only the brand shows, click to start ---- */
+.toolbar { transition: gap 0.16s ease, padding 0.16s ease; }
+.toolbar.collapsed { gap: 0; padding: 5px 6px; }
+.toolbar.collapsed > *:not(.brand) { display: none !important; }
+.toolbar.collapsed .brand {
+  cursor: pointer;
+  padding: 5px 12px 5px 10px;
+  border-radius: 999px;
+  outline: none;
+  transition: background 0.15s ease;
+}
+.toolbar.collapsed .brand:hover { background: rgba(255, 255, 255, 0.09); }
+.toolbar.collapsed .brand:active { background: rgba(255, 255, 255, 0.14); }
+.toolbar.collapsed .brand:focus-visible { box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.6); }
+.toolbar.collapsed .brand-dot { transition: transform 0.15s ease; }
+.toolbar.collapsed .brand:hover .brand-dot { transform: rotate(45deg) scale(1.15); }
 
 /* ---- shortcuts cheat-sheet (hover popover) ---- */
 .shortcuts {
@@ -503,8 +520,8 @@ const ct = `
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-`, ht = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
-class pt {
+`, pt = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+class ut {
   constructor() {
     this.host = document.createElement("div"), this.multiBoxes = [], this.onHandleDown = null, this.toastTimer = 0, this.host.setAttribute("data-sidetation", ""), Object.assign(this.host.style, {
       position: "fixed",
@@ -514,51 +531,51 @@ class pt {
     });
     const t = this.host.attachShadow({ mode: "open" });
     this.shadow = t;
-    const e = document.createElement("style");
-    e.textContent = ct, t.append(e);
-    const s = (o) => {
-      const i = document.createElement("div");
-      return i.className = o, t.append(i), i;
+    const s = document.createElement("style");
+    s.textContent = ht, t.append(s);
+    const e = (o) => {
+      const r = document.createElement("div");
+      return r.className = o, t.append(r), r;
     };
-    this.hoverBox = s("hover-box"), this.selBox = s("sel-box"), this.selLabel = document.createElement("div"), this.selLabel.className = "sel-label", this.selBox.append(this.selLabel);
-    for (const o of ht) {
-      const i = document.createElement("div");
-      i.className = "handle", i.dataset.dir = o, i.addEventListener("pointerdown", (n) => {
-        var a;
-        return (a = this.onHandleDown) == null ? void 0 : a.call(this, o, n);
-      }), this.selBox.append(i);
+    this.hoverBox = e("hover-box"), this.selBox = e("sel-box"), this.selLabel = document.createElement("div"), this.selLabel.className = "sel-label", this.selBox.append(this.selLabel);
+    for (const o of pt) {
+      const r = document.createElement("div");
+      r.className = "handle", r.dataset.dir = o, r.addEventListener("pointerdown", (n) => {
+        var l;
+        return (l = this.onHandleDown) == null ? void 0 : l.call(this, o, n);
+      }), this.selBox.append(r);
     }
-    this.guideV = s("guide guide-v"), this.guideH = s("guide guide-h"), this.panelEl = s("panel"), this.propsEl = s("props"), this.alignEl = s("align-panel"), this.shortcutsEl = s("shortcuts"), this.toolbarEl = s("toolbar"), this.toastEl = s("toast"), document.documentElement.appendChild(this.host);
+    this.guideV = e("guide guide-v"), this.guideH = e("guide guide-h"), this.panelEl = e("panel"), this.propsEl = e("props"), this.alignEl = e("align-panel"), this.shortcutsEl = e("shortcuts"), this.toolbarEl = e("toolbar"), this.toastEl = e("toast"), document.documentElement.appendChild(this.host);
   }
-  place(t, e) {
-    if (!e) {
+  place(t, s) {
+    if (!s) {
       t.style.display = "none";
       return;
     }
-    t.style.display = "block", t.style.left = `${e.left}px`, t.style.top = `${e.top}px`, t.style.width = `${e.width}px`, t.style.height = `${e.height}px`;
+    t.style.display = "block", t.style.left = `${s.left}px`, t.style.top = `${s.top}px`, t.style.width = `${s.width}px`, t.style.height = `${s.height}px`;
   }
   setHover(t) {
     this.place(this.hoverBox, t);
   }
-  setSelection(t, e = "") {
-    this.place(this.selBox, t), t && (this.selLabel.textContent = e);
+  setSelection(t, s = "") {
+    this.place(this.selBox, t), t && (this.selLabel.textContent = s);
   }
   /** plain highlight boxes (no handles) for a multi-selection */
   setMultiSelection(t) {
     for (; this.multiBoxes.length < t.length; ) {
-      const e = document.createElement("div");
-      e.className = "multi-box", this.shadow.append(e), this.multiBoxes.push(e);
+      const s = document.createElement("div");
+      s.className = "multi-box", this.shadow.append(s), this.multiBoxes.push(s);
     }
-    this.multiBoxes.forEach((e, s) => this.place(e, t[s] ?? null));
+    this.multiBoxes.forEach((s, e) => this.place(s, t[e] ?? null));
   }
   /** float the align/distribute panel above the selection's bounding box */
   positionAlignPanel(t) {
     if (t.length === 0) return;
-    const e = Math.min(...t.map((i) => i.left)), s = Math.max(...t.map((i) => i.right)), o = Math.min(...t.map((i) => i.top));
-    this.alignEl.style.left = `${(e + s) / 2}px`, this.alignEl.style.top = `${Math.max(0, o)}px`;
+    const s = Math.min(...t.map((r) => r.left)), e = Math.max(...t.map((r) => r.right)), o = Math.min(...t.map((r) => r.top));
+    this.alignEl.style.left = `${(s + e) / 2}px`, this.alignEl.style.top = `${Math.max(0, o)}px`;
   }
-  setGuides(t, e) {
-    this.guideV.style.display = t === null ? "none" : "block", t !== null && (this.guideV.style.left = `${t}px`), this.guideH.style.display = e === null ? "none" : "block", e !== null && (this.guideH.style.top = `${e}px`);
+  setGuides(t, s) {
+    this.guideV.style.display = t === null ? "none" : "block", t !== null && (this.guideV.style.left = `${t}px`), this.guideH.style.display = s === null ? "none" : "block", s !== null && (this.guideH.style.top = `${s}px`);
   }
   toast(t) {
     this.toastEl.textContent = t, this.toastEl.classList.add("show"), clearTimeout(this.toastTimer), this.toastTimer = window.setTimeout(() => this.toastEl.classList.remove("show"), 1600);
@@ -567,96 +584,96 @@ class pt {
     clearTimeout(this.toastTimer), this.host.remove();
   }
 }
-const ut = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, ft = ["data-testid", "data-test", "data-cy"];
-function it(r) {
-  return Array.from(r.classList).filter((t) => t.length <= 24 && !ut.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
+const gt = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, ft = ["data-testid", "data-test", "data-cy"];
+function it(i) {
+  return Array.from(i.classList).filter((t) => t.length <= 24 && !gt.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
 }
-function Y(r) {
-  return !r.id || /\d{3,}/.test(r.id) || /^[0-9a-f-]{8,}$/i.test(r.id) ? null : r.id;
+function G(i) {
+  return !i.id || /\d{3,}/.test(i.id) || /^[0-9a-f-]{8,}$/i.test(i.id) ? null : i.id;
 }
-function rt(r) {
-  const t = r.tagName.toLowerCase();
-  for (const s of ft) {
-    const o = r.getAttribute(s);
-    if (o) return `${t}[${s}="${o}"]`;
+function rt(i) {
+  const t = i.tagName.toLowerCase();
+  for (const e of ft) {
+    const o = i.getAttribute(e);
+    if (o) return `${t}[${e}="${o}"]`;
   }
-  const e = it(r).map((s) => `.${CSS.escape(s)}`).join("");
-  return t + e;
+  const s = it(i).map((e) => `.${CSS.escape(e)}`).join("");
+  return t + s;
 }
-function W(r, t) {
+function W(i, t) {
   try {
-    const e = document.querySelectorAll(r);
-    return e.length === 1 && e[0] === t;
+    const s = document.querySelectorAll(i);
+    return s.length === 1 && s[0] === t;
   } catch {
     return !1;
   }
 }
-function at(r) {
-  const t = rt(r), e = r.parentElement;
-  if (!e) return t;
-  const s = Array.from(e.children).filter((o) => o.tagName === r.tagName);
-  return s.length <= 1 ? t : `${t}:nth-of-type(${s.indexOf(r) + 1})`;
+function at(i) {
+  const t = rt(i), s = i.parentElement;
+  if (!s) return t;
+  const e = Array.from(s.children).filter((o) => o.tagName === i.tagName);
+  return e.length <= 1 ? t : `${t}:nth-of-type(${e.indexOf(i) + 1})`;
 }
-function J(r, t) {
-  const e = [];
-  let s = r;
-  for (; s && s !== document.body && s !== document.documentElement && e.length < 5; ) {
-    const o = Y(s);
-    if (o && s !== r) {
-      e.unshift(`#${CSS.escape(o)}`);
-      const n = e.join(" > ");
-      if (W(n, r)) return n;
+function tt(i, t) {
+  const s = [];
+  let e = i;
+  for (; e && e !== document.body && e !== document.documentElement && s.length < 5; ) {
+    const o = G(e);
+    if (o && e !== i) {
+      s.unshift(`#${CSS.escape(o)}`);
+      const n = s.join(" > ");
+      if (W(n, i)) return n;
       break;
     }
-    e.unshift(t ? at(s) : rt(s));
-    const i = e.join(" > ");
-    if (W(i, r)) return i;
-    s = s.parentElement;
+    s.unshift(t ? at(e) : rt(e));
+    const r = s.join(" > ");
+    if (W(r, i)) return r;
+    e = e.parentElement;
   }
   return null;
 }
-function gt(r) {
-  const t = Y(r);
+function mt(i) {
+  const t = G(i);
   if (t) {
     const n = `#${CSS.escape(t)}`;
-    if (W(n, r)) return n;
+    if (W(n, i)) return n;
   }
-  const e = J(r, !1);
-  if (e) return e;
-  const s = J(r, !0);
+  const s = tt(i, !1);
   if (s) return s;
+  const e = tt(i, !0);
+  if (e) return e;
   const o = [];
-  let i = r;
-  for (; i && i !== document.body && i !== document.documentElement && o.length < 5; )
-    o.unshift(at(i)), i = i.parentElement;
+  let r = i;
+  for (; r && r !== document.body && r !== document.documentElement && o.length < 5; )
+    o.unshift(at(r)), r = r.parentElement;
   return o.join(" > ");
 }
-function mt(r) {
-  const t = r.tagName.toLowerCase(), e = Y(r);
-  if (e) return `${t}#${e}`;
-  const s = it(r);
-  return s.length ? `${t}.${s[0]}` : t;
+function xt(i) {
+  const t = i.tagName.toLowerCase(), s = G(i);
+  if (s) return `${t}#${s}`;
+  const e = it(i);
+  return e.length ? `${t}.${e[0]}` : t;
 }
-function L(r, t, e) {
-  e ? r.style.setProperty(t, e) : r.style.removeProperty(t);
+function T(i, t, s) {
+  s ? i.style.setProperty(t, s) : i.style.removeProperty(t);
 }
-function $(r) {
-  const { el: t, savedInline: e } = r;
-  if (r.deleted ? t.style.display = "none" : r.resized && r.baseDisplay === "inline" ? t.style.display = "inline-block" : L(t, "display", e.display), r.moved && (r.dx !== 0 || r.dy !== 0)) {
-    const o = `translate(${r.dx}px, ${r.dy}px)`;
-    t.style.transform = r.baseTransform === "none" ? o : `${o} ${r.baseTransform}`;
+function $(i) {
+  const { el: t, savedInline: s } = i;
+  if (i.deleted ? t.style.display = "none" : i.resized && i.baseDisplay === "inline" ? t.style.display = "inline-block" : T(t, "display", s.display), i.moved && (i.dx !== 0 || i.dy !== 0)) {
+    const o = `translate(${i.dx}px, ${i.dy}px)`;
+    t.style.transform = i.baseTransform === "none" ? o : `${o} ${i.baseTransform}`;
   } else
-    L(t, "transform", e.transform);
-  r.resized ? (t.style.width = `${r.size.w - r.sizeAdj.w}px`, t.style.height = `${r.size.h - r.sizeAdj.h}px`) : (L(t, "width", e.width), L(t, "height", e.height));
-  const s = /* @__PURE__ */ new Set([...Object.keys(r.savedProps), ...Object.keys(r.props)]);
-  for (const o of s)
-    o in r.props ? t.style.setProperty(o, r.props[o]) : L(t, o, r.savedProps[o] ?? "");
-  if (r.savedText !== null && !t.hasAttribute("contenteditable")) {
-    const o = r.text ?? r.savedText;
+    T(t, "transform", s.transform);
+  i.resized ? (t.style.width = `${i.size.w - i.sizeAdj.w}px`, t.style.height = `${i.size.h - i.sizeAdj.h}px`) : (T(t, "width", s.width), T(t, "height", s.height));
+  const e = /* @__PURE__ */ new Set([...Object.keys(i.savedProps), ...Object.keys(i.props)]);
+  for (const o of e)
+    o in i.props ? t.style.setProperty(o, i.props[o]) : T(t, o, i.savedProps[o] ?? "");
+  if (i.savedText !== null && !t.hasAttribute("contenteditable")) {
+    const o = i.text ?? i.savedText;
     t.textContent !== o && (t.textContent = o);
   }
 }
-const xt = [
+const bt = [
   "display",
   "position",
   "flex-direction",
@@ -699,50 +716,50 @@ const xt = [
   "box-shadow",
   "transform",
   "object-fit"
-], bt = 120;
-function lt(r, t, e) {
-  if (e.n++ > bt) {
+], yt = 120;
+function lt(i, t, s) {
+  if (s.n++ > yt) {
     t.replaceChildren();
     return;
   }
-  const s = getComputedStyle(r);
+  const e = getComputedStyle(i);
   let o = "";
-  for (const a of xt) o += `${a}:${s.getPropertyValue(a)};`;
+  for (const l of bt) o += `${l}:${e.getPropertyValue(l)};`;
   t.setAttribute("style", o);
-  const i = Array.from(r.children), n = Array.from(t.children);
-  for (let a = 0; a < n.length; a++) {
-    const l = n[a].tagName.toLowerCase();
-    if (l === "script" || l === "iframe" || l === "video" || l === "canvas") {
-      n[a].remove();
+  const r = Array.from(i.children), n = Array.from(t.children);
+  for (let l = 0; l < n.length; l++) {
+    const a = n[l].tagName.toLowerCase();
+    if (a === "script" || a === "iframe" || a === "video" || a === "canvas") {
+      n[l].remove();
       continue;
     }
-    lt(i[a], n[a], e);
+    lt(r[l], n[l], s);
   }
 }
-function dt(r) {
-  const t = r.getBoundingClientRect();
+function dt(i) {
+  const t = i.getBoundingClientRect();
   if (t.width < 1 || t.height < 1) return null;
   try {
-    const e = r.cloneNode(!0);
-    lt(r, e, { n: 0 }), e.style.margin = "0", e.style.transform = "none", e.style.maxWidth = "none", e.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-    const s = new XMLSerializer().serializeToString(e), o = Math.ceil(t.width), i = Math.ceil(t.height), n = `<svg xmlns="http://www.w3.org/2000/svg" width="${o}" height="${i}"><foreignObject width="100%" height="100%">${s}</foreignObject></svg>`;
+    const s = i.cloneNode(!0);
+    lt(i, s, { n: 0 }), s.style.margin = "0", s.style.transform = "none", s.style.maxWidth = "none", s.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    const e = new XMLSerializer().serializeToString(s), o = Math.ceil(t.width), r = Math.ceil(t.height), n = `<svg xmlns="http://www.w3.org/2000/svg" width="${o}" height="${r}"><foreignObject width="100%" height="100%">${e}</foreignObject></svg>`;
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(n)}`;
   } catch {
     return null;
   }
 }
-const yt = 800;
-function Q(r) {
-  return !r.moved && !r.resized && !r.deleted && Object.keys(r.props).length === 0 && r.text === null;
+const wt = 800;
+function et(i) {
+  return !i.moved && !i.resized && !i.deleted && Object.keys(i.props).length === 0 && i.text === null;
 }
-function wt(r, t) {
-  const e = Object.keys(r);
-  return e.length === Object.keys(t).length && e.every((s) => r[s] === t[s]);
+function vt(i, t) {
+  const s = Object.keys(i);
+  return s.length === Object.keys(t).length && s.every((e) => i[e] === t[e]);
 }
-function vt(r, t) {
-  return r.dx === t.dx && r.dy === t.dy && r.size.w === t.size.w && r.size.h === t.size.h && r.moved === t.moved && r.resized === t.resized && r.deleted === t.deleted && r.text === t.text && wt(r.props, t.props);
+function St(i, t) {
+  return i.dx === t.dx && i.dy === t.dy && i.size.w === t.size.w && i.size.h === t.size.h && i.moved === t.moved && i.resized === t.resized && i.deleted === t.deleted && i.text === t.text && vt(i.props, t.props);
 }
-const Et = {
+const kt = {
   dx: 0,
   dy: 0,
   moved: !1,
@@ -750,24 +767,24 @@ const Et = {
   deleted: !1,
   text: null
 };
-class kt {
+class Et {
   constructor() {
     this.records = /* @__PURE__ */ new Map(), this.undoStack = [], this.redoStack = [], this.seq = 1, this.onChange = null;
   }
   ensure(t) {
-    let e = this.records.get(t);
-    if (e) return e;
-    const s = t.getBoundingClientRect(), o = getComputedStyle(t), i = o.boxSizing === "content-box", n = (a) => parseFloat(a) || 0;
-    return e = {
+    let s = this.records.get(t);
+    if (s) return s;
+    const e = t.getBoundingClientRect(), o = getComputedStyle(t), r = o.boxSizing === "content-box", n = (l) => parseFloat(l) || 0;
+    return s = {
       id: this.seq++,
       el: t,
-      selector: gt(t),
+      selector: mt(t),
       tag: t.tagName.toLowerCase(),
       originalRect: {
-        x: s.left + window.scrollX,
-        y: s.top + window.scrollY,
-        w: s.width,
-        h: s.height
+        x: e.left + window.scrollX,
+        y: e.top + window.scrollY,
+        w: e.width,
+        h: e.height
       },
       savedInline: {
         transform: t.style.getPropertyValue("transform"),
@@ -777,7 +794,7 @@ class kt {
       },
       baseTransform: o.transform,
       baseDisplay: o.display,
-      sizeAdj: i ? {
+      sizeAdj: r ? {
         w: n(o.paddingLeft) + n(o.paddingRight) + n(o.borderLeftWidth) + n(o.borderRightWidth),
         h: n(o.paddingTop) + n(o.paddingBottom) + n(o.borderTopWidth) + n(o.borderBottomWidth)
       } : { w: 0, h: 0 },
@@ -786,15 +803,15 @@ class kt {
       moved: !1,
       resized: !1,
       deleted: !1,
-      startSize: { w: s.width, h: s.height },
-      size: { w: s.width, h: s.height },
+      startSize: { w: e.width, h: e.height },
+      size: { w: e.width, h: e.height },
       beforeSnap: dt(t),
       // captured pre-edit: this IS the "before"
       savedText: t.childElementCount === 0 ? t.textContent : null,
       text: null,
       props: {},
       savedProps: {}
-    }, this.records.set(t, e), e;
+    }, this.records.set(t, s), s;
   }
   get(t) {
     return this.records.get(t);
@@ -815,43 +832,43 @@ class kt {
     };
   }
   /** finish a single-element gesture */
-  commit(t, e, s) {
-    this.commitBatch([{ rec: t, before: e }], s);
+  commit(t, s, e) {
+    this.commitBatch([{ rec: t, before: s }], e);
   }
   /** finish a (possibly multi-select) gesture as ONE undo step */
-  commitBatch(t, e) {
-    const s = [];
-    for (const { rec: a, before: l } of t) {
-      a.dx === 0 && a.dy === 0 && (a.moved = !1), $(a);
-      const c = this.snapshot(a);
-      vt(l, c) || s.push({ rec: a, before: l, after: c }), this.cleanup(a);
+  commitBatch(t, s) {
+    const e = [];
+    for (const { rec: l, before: a } of t) {
+      l.dx === 0 && l.dy === 0 && (l.moved = !1), $(l);
+      const c = this.snapshot(l);
+      St(a, c) || e.push({ rec: l, before: a, after: c }), this.cleanup(l);
     }
-    if (s.length === 0) {
+    if (e.length === 0) {
       this.emit();
       return;
     }
-    const o = (e == null ? void 0 : e.coalesce) ?? null, i = this.undoStack[this.undoStack.length - 1];
-    o !== null && i !== void 0 && i.coalesce === o && Date.now() - i.at < yt && i.entries.length === s.length && i.entries.every((a, l) => a.rec === s[l].rec) ? (s.forEach((a, l) => i.entries[l].after = a.after), i.at = Date.now()) : this.undoStack.push({ entries: s, coalesce: o, at: Date.now() }), this.redoStack.length = 0, this.emit();
+    const o = (s == null ? void 0 : s.coalesce) ?? null, r = this.undoStack[this.undoStack.length - 1];
+    o !== null && r !== void 0 && r.coalesce === o && Date.now() - r.at < wt && r.entries.length === e.length && r.entries.every((l, a) => l.rec === e[a].rec) ? (e.forEach((l, a) => r.entries[a].after = l.after), r.at = Date.now()) : this.undoStack.push({ entries: e, coalesce: o, at: Date.now() }), this.redoStack.length = 0, this.emit();
   }
   undo() {
     const t = this.undoStack.pop();
     if (!t) return !1;
-    for (const e of t.entries) this.applySnap(e.rec, e.before);
+    for (const s of t.entries) this.applySnap(s.rec, s.before);
     return this.redoStack.push(t), this.emit(), !0;
   }
   redo() {
     const t = this.redoStack.pop();
     if (!t) return !1;
-    for (const e of t.entries) this.applySnap(e.rec, e.after);
+    for (const s of t.entries) this.applySnap(s.rec, s.after);
     return this.undoStack.push(t), this.emit(), !0;
   }
   /** panel revert: back to pristine, as an undoable action */
   revert(t) {
-    const e = this.all().find((o) => o.id === t);
-    if (!e) return;
-    const s = this.snapshot(e);
-    this.applySnap(e, { ...Et, size: { ...e.startSize }, props: {} }), this.undoStack.push({
-      entries: [{ rec: e, before: s, after: this.snapshot(e) }],
+    const s = this.all().find((o) => o.id === t);
+    if (!s) return;
+    const e = this.snapshot(s);
+    this.applySnap(s, { ...kt, size: { ...s.startSize }, props: {} }), this.undoStack.push({
+      entries: [{ rec: s, before: e, after: this.snapshot(s) }],
       coalesce: null,
       at: Date.now()
     }), this.redoStack.length = 0, this.emit();
@@ -859,12 +876,12 @@ class kt {
   resetAll() {
     for (const t of this.all()) this.revert(t.id);
   }
-  applySnap(t, e) {
-    t.dx = e.dx, t.dy = e.dy, t.size = { ...e.size }, t.moved = e.moved, t.resized = e.resized, t.deleted = e.deleted, t.props = { ...e.props }, t.text = e.text, $(t), this.cleanup(t);
+  applySnap(t, s) {
+    t.dx = s.dx, t.dy = s.dy, t.size = { ...s.size }, t.moved = s.moved, t.resized = s.resized, t.deleted = s.deleted, t.props = { ...s.props }, t.text = s.text, $(t), this.cleanup(t);
   }
   /** keep the consolidated map in sync: pristine records drop out, edited ones stay */
   cleanup(t) {
-    Q(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
+    et(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
   }
   /**
    * Re-apply a previously saved session after a page refresh: re-resolve each
@@ -872,35 +889,35 @@ class kt {
    * Returns the count of entries whose selector no longer resolves uniquely.
    */
   restore(t) {
-    let e = 0;
-    for (const s of t) {
+    let s = 0;
+    for (const e of t) {
       let o;
       try {
-        o = document.querySelectorAll(s.selector);
+        o = document.querySelectorAll(e.selector);
       } catch {
-        e++;
+        s++;
         continue;
       }
       if (o.length !== 1) {
-        e++;
+        s++;
         continue;
       }
-      const i = this.ensure(o[0]);
-      i.dx = s.dx, i.dy = s.dy, i.moved = s.moved, i.resized = s.resized, i.deleted = s.deleted, i.startSize = { ...s.startSize }, i.size = { ...s.size }, i.text = s.text, i.props = { ...s.props }, i.savedProps = { ...s.savedProps }, $(i), this.cleanup(i);
+      const r = this.ensure(o[0]);
+      r.dx = e.dx, r.dy = e.dy, r.moved = e.moved, r.resized = e.resized, r.deleted = e.deleted, r.startSize = { ...e.startSize }, r.size = { ...e.size }, r.text = e.text, r.props = { ...e.props }, r.savedProps = { ...e.savedProps }, $(r), this.cleanup(r);
     }
-    return e;
+    return s;
   }
   /** drop records that were ensure()d but never turned into a real edit */
   prune() {
-    for (const [t, e] of this.records)
-      Q(e) && this.records.delete(t);
+    for (const [t, s] of this.records)
+      et(s) && this.records.delete(t);
   }
   emit() {
     var t;
     (t = this.onChange) == null || t.call(this);
   }
 }
-const B = Math.round, St = [
+const B = Math.round, zt = [
   ["点击", "选中元素，点子元素可下钻"],
   ["⇧ 点击", "多选 / 取消多选元素"],
   ["双击", "编辑文字内容（纯文本元素）"],
@@ -914,57 +931,67 @@ const B = Math.round, St = [
   ["Tab / ⇧Tab", "下一个 / 上一个兄弟元素"],
   ["Esc", "取消选中，再按退出编辑"]
 ];
-class zt {
-  constructor(t, e, s, o) {
-    this.panel = e, this.shortcuts = s, this.cb = o, this.panelOpen = !1, this.records = [];
-    const i = document.createElement("div");
-    i.className = "brand";
-    const n = document.createElement("span");
-    n.className = "brand-dot", i.append(n, "Sidetation"), t.append(i);
-    const a = (p, f) => {
+class $t {
+  constructor(t, s, e, o, r = !1) {
+    this.bar = t, this.panel = s, this.shortcuts = e, this.cb = o, this.panelOpen = !1, this.active = !1, this.records = [];
+    const n = document.createElement("div");
+    n.className = "brand", n.setAttribute("role", "button");
+    const l = document.createElement("span");
+    l.className = "brand-dot", n.append(l, "Sidetation"), t.append(n), this.brandEl = n, n.addEventListener("click", () => {
+      this.active || this.cb.onToggle();
+    }), n.addEventListener("keydown", (g) => {
+      !this.active && (g.key === "Enter" || g.key === " ") && (g.preventDefault(), this.cb.onToggle());
+    });
+    const a = (g, b) => {
       const x = document.createElement("button");
-      return x.textContent = p, x.addEventListener("click", f), t.append(x), x;
-    }, l = () => {
-      const p = document.createElement("div");
-      p.className = "divider", t.append(p);
+      return x.textContent = g, x.addEventListener("click", b), t.append(x), x;
+    }, c = () => {
+      const g = document.createElement("div");
+      g.className = "divider", t.append(g);
     };
     this.toggleBtn = a("开始编辑", () => o.onToggle()), this.toggleBtn.classList.add("primary"), this.kbdBtn = a("", () => {
     }), this.kbdBtn.classList.add("kbd-btn"), this.kbdBtn.title = "快捷键";
-    const c = "http://www.w3.org/2000/svg", d = document.createElementNS(c, "svg");
+    const h = "http://www.w3.org/2000/svg", d = document.createElementNS(h, "svg");
     d.setAttribute("viewBox", "0 0 24 24"), d.setAttribute("fill", "none"), d.setAttribute("stroke", "currentColor"), d.setAttribute("stroke-width", "2"), d.setAttribute("stroke-linecap", "round"), d.setAttribute("stroke-linejoin", "round");
-    const h = document.createElementNS(c, "path");
-    h.setAttribute("d", "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"), d.append(h), this.kbdBtn.append(d), this.buildShortcuts(), this.kbdBtn.addEventListener("mouseenter", () => this.showShortcuts()), this.kbdBtn.addEventListener("mouseleave", () => this.shortcuts.classList.remove("open")), l(), this.editsBtn = a("修改 0", () => this.togglePanel()), this.resetBtn = a("重置", () => o.onReset()), l(), this.mdBtn = a("复制 Markdown", () => o.onCopyMd()), this.cssBtn = a("复制 CSS", () => o.onCopyCss());
+    const p = document.createElementNS(h, "path");
+    p.setAttribute("d", "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"), d.append(p), this.kbdBtn.append(d), this.buildShortcuts(), this.kbdBtn.addEventListener("mouseenter", () => this.showShortcuts()), this.kbdBtn.addEventListener("mouseleave", () => this.shortcuts.classList.remove("open")), c(), this.editsBtn = a("修改 0", () => this.togglePanel()), this.resetBtn = a("重置", () => o.onReset()), c(), this.mdBtn = a("复制 Markdown", () => o.onCopyMd()), this.cssBtn = a("复制 CSS", () => o.onCopyCss()), r && (this.syncBtn = a("同步 MCP", () => o.onSync()), this.syncBtn.title = "把当前修改推送到本地 MCP 服务，供 AI 编码助手读取");
+  }
+  /** reflect the in-flight sync request on the button */
+  setSyncState(t) {
+    if (!this.syncBtn) return;
+    const s = t === "syncing";
+    this.syncBtn.textContent = s ? "同步中…" : "同步 MCP", this.syncBtn.disabled = s || this.records.length === 0;
   }
   buildShortcuts() {
     const t = document.createElement("div");
     t.className = "shortcuts-title", t.textContent = "快捷键", this.shortcuts.append(t);
-    for (const [e, s] of St) {
+    for (const [s, e] of zt) {
       const o = document.createElement("div");
       o.className = "shortcut-row";
-      const i = document.createElement("span");
-      i.className = "kbd", i.textContent = e;
+      const r = document.createElement("span");
+      r.className = "kbd", r.textContent = s;
       const n = document.createElement("span");
-      n.className = "shortcut-desc", n.textContent = s, o.append(i, n), this.shortcuts.append(o);
+      n.className = "shortcut-desc", n.textContent = e, o.append(r, n), this.shortcuts.append(o);
     }
   }
   /** before -> after square thumbnails so the user can see what changed */
   buildThumbs(t) {
-    const e = document.createElement("div");
-    e.className = "edit-thumbs";
-    const s = (n, a = !1) => {
-      const l = document.createElement("div");
-      if (l.className = "thumb", a)
-        l.classList.add("deleted"), l.textContent = "✕";
+    const s = document.createElement("div");
+    s.className = "edit-thumbs";
+    const e = (n, l = !1) => {
+      const a = document.createElement("div");
+      if (a.className = "thumb", l)
+        a.classList.add("deleted"), a.textContent = "✕";
       else if (n) {
         const c = document.createElement("img");
-        c.src = n, c.alt = "", l.append(c);
+        c.src = n, c.alt = "", a.append(c);
       } else
-        l.textContent = "?", l.classList.add("empty");
-      return l;
+        a.textContent = "?", a.classList.add("empty");
+      return a;
     }, o = document.createElement("span");
     o.className = "thumb-arrow", o.textContent = "→";
-    const i = t.deleted || !t.el.isConnected ? s(null, !0) : s(dt(t.el));
-    return e.append(s(t.beforeSnap), o, i), e;
+    const r = t.deleted || !t.el.isConnected ? e(null, !0) : e(dt(t.el));
+    return s.append(e(t.beforeSnap), o, r), s;
   }
   showShortcuts() {
     const t = this.kbdBtn.getBoundingClientRect();
@@ -973,10 +1000,10 @@ class zt {
   togglePanel() {
     this.panelOpen = !this.panelOpen, this.panel.classList.toggle("open", this.panelOpen), this.panelOpen && this.renderPanel();
   }
-  update(t, e) {
-    this.records = e, this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.kbdBtn.style.display = t ? "" : "none", t || this.shortcuts.classList.remove("open"), this.editsBtn.textContent = `修改 ${e.length}`;
-    const s = e.length === 0;
-    this.editsBtn.disabled = s, this.resetBtn.disabled = s, this.mdBtn.disabled = s, this.cssBtn.disabled = s, s && this.panelOpen ? this.togglePanel() : this.panelOpen && this.renderPanel();
+  update(t, s) {
+    this.records = s, this.active = t, this.bar.classList.toggle("collapsed", !t), this.brandEl.setAttribute("tabindex", t ? "-1" : "0"), this.brandEl.title = t ? "" : "开始编辑", this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.kbdBtn.style.display = t ? "" : "none", t || this.shortcuts.classList.remove("open"), this.editsBtn.textContent = `修改 ${s.length}`;
+    const e = s.length === 0;
+    this.editsBtn.disabled = e, this.resetBtn.disabled = e, this.mdBtn.disabled = e, this.cssBtn.disabled = e, this.syncBtn && (this.syncBtn.disabled = e), e && this.panelOpen ? this.togglePanel() : this.panelOpen && this.renderPanel();
   }
   renderPanel() {
     if (this.panel.replaceChildren(), this.records.length === 0) {
@@ -985,127 +1012,127 @@ class zt {
       return;
     }
     for (const t of this.records) {
-      const e = document.createElement("div");
-      e.className = "edit-row", e.append(this.buildThumbs(t));
-      const s = [];
-      t.deleted && s.push("删除"), t.moved && s.push(`移动 Δx ${B(t.dx)} / Δy ${B(t.dy)}`), t.resized && s.push(
+      const s = document.createElement("div");
+      s.className = "edit-row", s.append(this.buildThumbs(t));
+      const e = [];
+      t.deleted && e.push("删除"), t.moved && e.push(`移动 Δx ${B(t.dx)} / Δy ${B(t.dy)}`), t.resized && e.push(
         `尺寸 ${B(t.startSize.w)}×${B(t.startSize.h)} → ${B(t.size.w)}×${B(t.size.h)}`
       );
       const o = Object.keys(t.props).length;
-      o && s.push(`样式 ×${o}`), t.text !== null && s.push("文字");
-      const i = document.createElement("div");
-      i.className = "edit-info";
+      o && e.push(`样式 ×${o}`), t.text !== null && e.push("文字");
+      const r = document.createElement("div");
+      r.className = "edit-info";
       const n = document.createElement("div");
       n.className = "edit-sel", n.textContent = t.selector;
-      const a = document.createElement("div");
-      a.className = "edit-delta", a.textContent = s.join(" · "), i.append(n, a), e.append(i);
-      const l = document.createElement("button");
-      l.textContent = "撤销", l.addEventListener("click", () => this.cb.onRevert(t.id)), e.append(l), this.panel.append(e);
+      const l = document.createElement("div");
+      l.className = "edit-delta", l.textContent = e.join(" · "), r.append(n, l), s.append(r);
+      const a = document.createElement("button");
+      a.textContent = "撤销", a.addEventListener("click", () => this.cb.onRevert(t.id)), s.append(a), this.panel.append(s);
     }
   }
 }
-const I = ["flex-start", "center", "flex-end"], F = (r) => Math.round(parseFloat(r) || 0), H = (r) => Math.round(r).toString(16).padStart(2, "0");
-function tt(r) {
-  const t = r.match(/rgba?\(([^)]+)\)/);
-  if (!t) return { hex: "#000000", alpha: r && r !== "transparent" ? 1 : 0 };
-  const e = t[1].split(",").map((s) => parseFloat(s));
-  return { hex: `#${H(e[0])}${H(e[1])}${H(e[2])}`, alpha: e[3] ?? 1 };
+const I = ["flex-start", "center", "flex-end"], H = (i) => Math.round(parseFloat(i) || 0), F = (i) => Math.round(i).toString(16).padStart(2, "0");
+function st(i) {
+  const t = i.match(/rgba?\(([^)]+)\)/);
+  if (!t) return { hex: "#000000", alpha: i && i !== "transparent" ? 1 : 0 };
+  const s = t[1].split(",").map((e) => parseFloat(e));
+  return { hex: `#${F(s[0])}${F(s[1])}${F(s[2])}`, alpha: s[3] ?? 1 };
 }
-function $t(r, t) {
-  if (t >= 1) return r;
-  const e = parseInt(r.slice(1, 3), 16), s = parseInt(r.slice(3, 5), 16), o = parseInt(r.slice(5, 7), 16);
-  return `rgba(${e}, ${s}, ${o}, ${+t.toFixed(3)})`;
+function Ct(i, t) {
+  if (t >= 1) return i;
+  const s = parseInt(i.slice(1, 3), 16), e = parseInt(i.slice(3, 5), 16), o = parseInt(i.slice(5, 7), 16);
+  return `rgba(${s}, ${e}, ${o}, ${+t.toFixed(3)})`;
 }
-function et(r) {
-  return r.includes("center") ? 1 : r.includes("end") ? 2 : 0;
+function ot(i) {
+  return i.includes("center") ? 1 : i.includes("end") ? 2 : 0;
 }
-class Ct {
-  constructor(t, e) {
-    this.root = t, this.host = e, this.el = null, this.flow = "none", this.cssOpen = !1, this.flowBtns = [], this.alignBtns = [], this.padSides = [], this.padIndependent = !1, this.layoutOnly = [], this.build();
+class Pt {
+  constructor(t, s) {
+    this.root = t, this.host = s, this.el = null, this.flow = "none", this.cssOpen = !1, this.flowBtns = [], this.alignBtns = [], this.padSides = [], this.padIndependent = !1, this.layoutOnly = [], this.build();
   }
   // ---------- DOM construction ----------
   section(t) {
+    const s = document.createElement("div");
+    s.className = "props-section";
     const e = document.createElement("div");
-    e.className = "props-section";
-    const s = document.createElement("div");
-    return s.className = "props-title", s.textContent = t, e.append(s), this.root.append(e), e;
+    return e.className = "props-title", e.textContent = t, s.append(e), this.root.append(s), s;
   }
-  row(t, e) {
-    const s = document.createElement("div");
-    if (s.className = "props-row", e) {
+  row(t, s) {
+    const e = document.createElement("div");
+    if (e.className = "props-row", s) {
       const o = document.createElement("div");
-      o.className = "props-label", o.textContent = e, s.append(o);
+      o.className = "props-label", o.textContent = s, e.append(o);
     }
-    return t.append(s), s;
+    return t.append(e), e;
   }
-  num(t, e, s = 0) {
+  num(t, s, e = 0) {
     const o = document.createElement("input");
-    o.type = "number", o.min = String(s);
-    const i = () => {
+    o.type = "number", o.min = String(e);
+    const r = () => {
       const n = parseFloat(o.value);
-      Number.isNaN(n) || e(n);
+      Number.isNaN(n) || s(n);
     };
-    return o.addEventListener("change", i), o.addEventListener("keydown", (n) => {
-      n.key === "Enter" && (i(), o.blur());
+    return o.addEventListener("change", r), o.addEventListener("keydown", (n) => {
+      n.key === "Enter" && (r(), o.blur());
     }), t.append(o), o;
   }
-  color(t, e) {
-    const s = document.createElement("input");
-    return s.type = "color", s.addEventListener("change", () => e(s.value)), t.append(s), s;
+  color(t, s) {
+    const e = document.createElement("input");
+    return e.type = "color", e.addEventListener("change", () => s(e.value)), t.append(e), e;
   }
   build() {
     const t = document.createElement("div");
     t.className = "props-section css-section";
-    const e = document.createElement("div");
-    e.className = "props-title css-title", this.cssArrowEl = document.createElement("span"), this.cssArrowEl.className = "css-arrow", this.cssArrowEl.textContent = "▶", e.append(this.cssArrowEl, " CSS"), e.addEventListener("click", () => this.toggleCssViewer()), this.cssBody = document.createElement("div"), this.cssBody.className = "css-body", t.append(e, this.cssBody), this.root.append(t);
-    const s = this.section("Auto layout"), o = this.row(s, "Flow"), i = document.createElement("div");
-    i.className = "seg";
+    const s = document.createElement("div");
+    s.className = "props-title css-title", this.cssArrowEl = document.createElement("span"), this.cssArrowEl.className = "css-arrow", this.cssArrowEl.textContent = "▶", s.append(this.cssArrowEl, " CSS"), s.addEventListener("click", () => this.toggleCssViewer()), this.cssBody = document.createElement("div"), this.cssBody.className = "css-body", t.append(s, this.cssBody), this.root.append(t);
+    const e = this.section("Auto layout"), o = this.row(e, "Flow"), r = document.createElement("div");
+    r.className = "seg";
     const n = [
       ["none", "✕", "不使用 flex"],
       ["col", "↓", "纵向排列 (column)"],
       ["row", "→", "横向排列 (row)"],
       ["wrap", "⤸", "横向换行 (wrap)"]
     ];
-    for (const [m, v, S] of n) {
+    for (const [m, v, E] of n) {
       const z = document.createElement("button");
-      z.textContent = v, z.title = S, z.addEventListener("click", () => this.applyFlow(m)), i.append(z), this.flowBtns.push(z);
+      z.textContent = v, z.title = E, z.addEventListener("click", () => this.applyFlow(m)), r.append(z), this.flowBtns.push(z);
     }
-    o.append(i);
-    const a = this.row(s, "W / H");
-    this.wInput = this.num(a, (m) => this.host.setSize(m, null), 8), this.hInput = this.num(a, (m) => this.host.setSize(null, m), 8);
-    const l = this.row(s, "Align"), c = document.createElement("div");
+    o.append(r);
+    const l = this.row(e, "W / H");
+    this.wInput = this.num(l, (m) => this.host.setSize(m, null), 8), this.hInput = this.num(l, (m) => this.host.setSize(null, m), 8);
+    const a = this.row(e, "Align"), c = document.createElement("div");
     c.className = "align-grid";
     for (let m = 0; m < 3; m++)
       for (let v = 0; v < 3; v++) {
-        const S = document.createElement("button");
-        S.addEventListener("click", () => this.applyAlign(m, v)), c.append(S), this.alignBtns.push(S);
+        const E = document.createElement("button");
+        E.addEventListener("click", () => this.applyAlign(m, v)), c.append(E), this.alignBtns.push(E);
       }
-    l.append(c);
-    const d = document.createElement("div");
-    d.style.flex = "1";
+    a.append(c);
     const h = document.createElement("div");
-    h.className = "props-label", h.textContent = "Gap", d.append(h), this.gapInput = this.num(d, (m) => this.host.setProps({ gap: `${m}px` })), l.append(d), this.layoutOnly.push(c, d), this.padLinkedRow = this.row(s, "Padding"), this.padXInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padYInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padXInput.title = "水平 padding", this.padYInput.title = "垂直 padding", this.padToggle = document.createElement("button"), this.padToggle.className = "pad-toggle", this.padToggle.textContent = "⊞", this.padToggle.title = "四边独立 padding", this.padToggle.addEventListener("click", () => this.togglePadMode()), this.padLinkedRow.append(this.padToggle), this.padGridRow = this.row(s, ""), this.padGridRow.style.display = "none";
+    h.style.flex = "1";
+    const d = document.createElement("div");
+    d.className = "props-label", d.textContent = "Gap", h.append(d), this.gapInput = this.num(h, (m) => this.host.setProps({ gap: `${m}px` })), a.append(h), this.layoutOnly.push(c, h), this.padLinkedRow = this.row(e, "Padding"), this.padXInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padYInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padXInput.title = "水平 padding", this.padYInput.title = "垂直 padding", this.padToggle = document.createElement("button"), this.padToggle.className = "pad-toggle", this.padToggle.textContent = "⊞", this.padToggle.title = "四边独立 padding", this.padToggle.addEventListener("click", () => this.togglePadMode()), this.padLinkedRow.append(this.padToggle), this.padGridRow = this.row(e, ""), this.padGridRow.style.display = "none";
     const p = document.createElement("div");
     p.className = "pad-grid";
-    const f = ["左 padding", "上 padding", "右 padding", "下 padding"];
+    const g = ["左 padding", "上 padding", "右 padding", "下 padding"];
     for (let m = 0; m < 4; m++) {
       const v = this.num(p, () => this.applyPadding());
-      v.title = f[m], this.padSides.push(v);
+      v.title = g[m], this.padSides.push(v);
     }
     this.padGridRow.append(p);
-    const x = this.row(s), y = document.createElement("label");
-    y.className = "check", this.clipInput = document.createElement("input"), this.clipInput.type = "checkbox", this.clipInput.addEventListener(
+    const b = this.row(e), x = document.createElement("label");
+    x.className = "check", this.clipInput = document.createElement("input"), this.clipInput.type = "checkbox", this.clipInput.addEventListener(
       "change",
       () => this.host.setProps({ overflow: this.clipInput.checked ? "hidden" : "visible" })
-    ), y.append(this.clipInput, "Clip content"), x.append(y);
-    const E = this.section("Appearance"), k = this.row(E, "Opacity %");
+    ), x.append(this.clipInput, "Clip content"), b.append(x);
+    const S = this.section("Appearance"), k = this.row(S, "Opacity %");
     this.opacityInput = this.num(
       k,
       (m) => this.host.setProps({ opacity: String(Math.min(100, Math.max(0, m)) / 100) })
     );
-    const C = this.row(E, "Radius");
+    const C = this.row(S, "Radius");
     this.radiusInput = this.num(C, (m) => this.host.setProps({ "border-radius": `${m}px` }));
-    const T = this.section("Fill"), R = this.row(T, "Color");
+    const L = this.section("Fill"), R = this.row(L, "Color");
     this.fillColor = this.color(R, () => this.applyFill()), this.fillPct = this.num(R, () => this.applyFill()), this.fillPct.title = "不透明度 %";
     const A = this.section("Stroke"), M = this.row(A, "Color / W");
     this.strokeColor = this.color(M, () => this.applyStroke()), this.strokeWidth = this.num(M, () => this.applyStroke()), this.strokeWidth.step = "0.5", this.strokeWidth.title = "描边宽度 px";
@@ -1118,17 +1145,17 @@ class Ct {
       "flex-wrap": t === "wrap" ? "wrap" : "nowrap"
     }), this.markFlow();
   }
-  applyAlign(t, e) {
-    const s = this.flow === "col" ? I[t] : I[e], o = this.flow === "col" ? I[e] : I[t];
-    this.host.setProps({ "justify-content": s, "align-items": o }), this.markAlign(t, e);
+  applyAlign(t, s) {
+    const e = this.flow === "col" ? I[t] : I[s], o = this.flow === "col" ? I[s] : I[t];
+    this.host.setProps({ "justify-content": e, "align-items": o }), this.markAlign(t, s);
   }
   applyPadding() {
     if (this.padIndependent) {
-      const [t, e, s, o] = this.padSides.map((i) => parseFloat(i.value) || 0);
-      this.host.setProps({ padding: `${e}px ${s}px ${o}px ${t}px` });
+      const [t, s, e, o] = this.padSides.map((r) => parseFloat(r.value) || 0);
+      this.host.setProps({ padding: `${s}px ${e}px ${o}px ${t}px` });
     } else {
-      const t = parseFloat(this.padXInput.value) || 0, e = parseFloat(this.padYInput.value) || 0;
-      this.host.setProps({ padding: `${e}px ${t}px` });
+      const t = parseFloat(this.padXInput.value) || 0, s = parseFloat(this.padYInput.value) || 0;
+      this.host.setProps({ padding: `${s}px ${t}px` });
     }
   }
   setPadMode(t) {
@@ -1137,15 +1164,15 @@ class Ct {
   togglePadMode() {
     const t = !this.padIndependent;
     if (t) {
-      const e = this.padXInput.value || "0", s = this.padYInput.value || "0", o = [e, s, e, s];
-      this.padSides.forEach((i, n) => i.value = o[n]);
+      const s = this.padXInput.value || "0", e = this.padYInput.value || "0", o = [s, e, s, e];
+      this.padSides.forEach((r, n) => r.value = o[n]);
     } else
       this.padXInput.value = this.padSides[0].value || "0", this.padYInput.value = this.padSides[1].value || "0", this.applyPadding();
     this.setPadMode(t);
   }
   applyFill() {
     const t = Math.min(100, Math.max(0, parseFloat(this.fillPct.value) || 0));
-    this.host.setProps({ "background-color": $t(this.fillColor.value, t / 100) });
+    this.host.setProps({ "background-color": Ct(this.fillColor.value, t / 100) });
   }
   applyStroke() {
     const t = Math.max(0, parseFloat(this.strokeWidth.value) || 0);
@@ -1161,117 +1188,117 @@ class Ct {
   }
   renderCSS(t) {
     this.cssBody.replaceChildren();
-    const e = getComputedStyle(t), s = (u) => e.getPropertyValue(u).trim(), o = (u, b, w, P) => u === b && b === w && w === P ? u : u === w && b === P ? `${u} ${b}` : `${u} ${b} ${w} ${P}`, i = [], n = (u, b, w) => {
-      w && i.push([u, b, w]);
+    const s = getComputedStyle(t), e = (f) => s.getPropertyValue(f).trim(), o = (f, y, w, P) => f === y && y === w && w === P ? f : f === w && y === P ? `${f} ${y}` : `${f} ${y} ${w} ${P}`, r = [], n = (f, y, w) => {
+      w && r.push([f, y, w]);
     };
-    if (n("定位", "position", s("position")), s("position") !== "static") {
-      for (const b of ["top", "right", "bottom", "left"]) {
-        const w = s(b);
-        w !== "auto" && n("定位", b, w);
+    if (n("定位", "position", e("position")), e("position") !== "static") {
+      for (const y of ["top", "right", "bottom", "left"]) {
+        const w = e(y);
+        w !== "auto" && n("定位", y, w);
       }
-      const u = s("z-index");
-      u !== "auto" && n("定位", "z-index", u);
+      const f = e("z-index");
+      f !== "auto" && n("定位", "z-index", f);
     }
-    const a = s("float");
-    a !== "none" && n("定位", "float", a), n("盒模型", "display", s("display")), n("盒模型", "box-sizing", s("box-sizing")), n("盒模型", "width", s("width")), n("盒模型", "height", s("height"));
-    const l = s("min-width");
-    l !== "0px" && n("盒模型", "min-width", l);
-    const c = s("max-width");
+    const l = e("float");
+    l !== "none" && n("定位", "float", l), n("盒模型", "display", e("display")), n("盒模型", "box-sizing", e("box-sizing")), n("盒模型", "width", e("width")), n("盒模型", "height", e("height"));
+    const a = e("min-width");
+    a !== "0px" && n("盒模型", "min-width", a);
+    const c = e("max-width");
     c !== "none" && n("盒模型", "max-width", c);
-    const d = s("min-height");
-    d !== "0px" && n("盒模型", "min-height", d);
-    const h = s("max-height");
-    h !== "none" && n("盒模型", "max-height", h);
-    const p = s("overflow-x"), f = s("overflow-y");
-    n("盒模型", "overflow", p === f ? p : `${p} / ${f}`), n("间距", "margin", o(s("margin-top"), s("margin-right"), s("margin-bottom"), s("margin-left"))), n("间距", "padding", o(s("padding-top"), s("padding-right"), s("padding-bottom"), s("padding-left"))), n("字体", "font-family", s("font-family")), n("字体", "font-size", s("font-size")), n("字体", "font-weight", s("font-weight")), n("字体", "line-height", s("line-height"));
-    const x = s("letter-spacing");
-    x !== "normal" && n("字体", "letter-spacing", x), n("字体", "color", s("color")), n("字体", "text-align", s("text-align"));
-    const y = s("text-decoration-line");
-    y !== "none" && n("字体", "text-decoration", `${y} ${s("text-decoration-color")}`.trim());
-    const E = s("text-transform");
-    E !== "none" && n("字体", "text-transform", E);
-    const k = s("white-space");
-    k !== "normal" && n("字体", "white-space", k), n("背景", "background-color", s("background-color"));
-    const C = s("background-image");
+    const h = e("min-height");
+    h !== "0px" && n("盒模型", "min-height", h);
+    const d = e("max-height");
+    d !== "none" && n("盒模型", "max-height", d);
+    const p = e("overflow-x"), g = e("overflow-y");
+    n("盒模型", "overflow", p === g ? p : `${p} / ${g}`), n("间距", "margin", o(e("margin-top"), e("margin-right"), e("margin-bottom"), e("margin-left"))), n("间距", "padding", o(e("padding-top"), e("padding-right"), e("padding-bottom"), e("padding-left"))), n("字体", "font-family", e("font-family")), n("字体", "font-size", e("font-size")), n("字体", "font-weight", e("font-weight")), n("字体", "line-height", e("line-height"));
+    const b = e("letter-spacing");
+    b !== "normal" && n("字体", "letter-spacing", b), n("字体", "color", e("color")), n("字体", "text-align", e("text-align"));
+    const x = e("text-decoration-line");
+    x !== "none" && n("字体", "text-decoration", `${x} ${e("text-decoration-color")}`.trim());
+    const S = e("text-transform");
+    S !== "none" && n("字体", "text-transform", S);
+    const k = e("white-space");
+    k !== "normal" && n("字体", "white-space", k), n("背景", "background-color", e("background-color"));
+    const C = e("background-image");
     C !== "none" && n("背景", "background-image", C);
-    const T = s("background-size");
-    T !== "auto" && n("背景", "background-size", T);
-    const R = s("border-top-width"), A = s("border-top-style"), M = s("border-top-color");
+    const L = e("background-size");
+    L !== "auto" && n("背景", "background-size", L);
+    const R = e("border-top-width"), A = e("border-top-style"), M = e("border-top-color");
     A !== "none" && n("边框", "border", `${R} ${A} ${M}`);
     const m = o(
-      s("border-top-left-radius"),
-      s("border-top-right-radius"),
-      s("border-bottom-right-radius"),
-      s("border-bottom-left-radius")
+      e("border-top-left-radius"),
+      e("border-top-right-radius"),
+      e("border-bottom-right-radius"),
+      e("border-bottom-left-radius")
     );
     m !== "0px" && n("边框", "border-radius", m);
-    const v = s("outline");
+    const v = e("outline");
     v.startsWith("0px") || n("边框", "outline", v);
-    const S = s("display");
-    if (S.includes("flex")) {
-      n("Flex", "flex-direction", s("flex-direction")), n("Flex", "flex-wrap", s("flex-wrap")), n("Flex", "justify-content", s("justify-content")), n("Flex", "align-items", s("align-items"));
-      const u = s("row-gap"), b = s("column-gap");
-      u !== "normal" && u !== "0px" && n("Flex", "gap", u === b ? u : `${u} ${b}`);
+    const E = e("display");
+    if (E.includes("flex")) {
+      n("Flex", "flex-direction", e("flex-direction")), n("Flex", "flex-wrap", e("flex-wrap")), n("Flex", "justify-content", e("justify-content")), n("Flex", "align-items", e("align-items"));
+      const f = e("row-gap"), y = e("column-gap");
+      f !== "normal" && f !== "0px" && n("Flex", "gap", f === y ? f : `${f} ${y}`);
     }
-    S.includes("grid") && (n("Grid", "grid-template-columns", s("grid-template-columns")), n("Grid", "grid-template-rows", s("grid-template-rows")), n("Grid", "grid-auto-flow", s("grid-auto-flow")));
-    const z = s("align-self");
+    E.includes("grid") && (n("Grid", "grid-template-columns", e("grid-template-columns")), n("Grid", "grid-template-rows", e("grid-template-rows")), n("Grid", "grid-auto-flow", e("grid-auto-flow")));
+    const z = e("align-self");
     z !== "auto" && n("Flex", "align-self", z);
-    const V = s("flex-grow");
-    V !== "0" && n("Flex", "flex-grow", V);
-    const G = s("flex-shrink");
-    G !== "1" && n("Flex", "flex-shrink", G);
-    const U = s("opacity");
-    U !== "1" && n("效果", "opacity", U);
-    const K = s("box-shadow");
-    K !== "none" && n("效果", "box-shadow", K);
-    const _ = s("transform");
-    _ !== "none" && n("效果", "transform", _);
-    const N = s("transition");
-    N && !N.startsWith("all 0s") && n("效果", "transition", N), n("效果", "cursor", s("cursor"));
-    const q = s("pointer-events");
-    if (q !== "auto" && n("效果", "pointer-events", q), i.length === 0) {
-      const u = document.createElement("div");
-      u.className = "css-empty", u.textContent = "暂无样式", this.cssBody.append(u);
+    const U = e("flex-grow");
+    U !== "0" && n("Flex", "flex-grow", U);
+    const K = e("flex-shrink");
+    K !== "1" && n("Flex", "flex-shrink", K);
+    const _ = e("opacity");
+    _ !== "1" && n("效果", "opacity", _);
+    const q = e("box-shadow");
+    q !== "none" && n("效果", "box-shadow", q);
+    const Z = e("transform");
+    Z !== "none" && n("效果", "transform", Z);
+    const N = e("transition");
+    N && !N.startsWith("all 0s") && n("效果", "transition", N), n("效果", "cursor", e("cursor"));
+    const J = e("pointer-events");
+    if (J !== "auto" && n("效果", "pointer-events", J), r.length === 0) {
+      const f = document.createElement("div");
+      f.className = "css-empty", f.textContent = "暂无样式", this.cssBody.append(f);
       return;
     }
-    let Z = "";
-    for (const [u, b, w] of i) {
-      if (u !== Z) {
-        const O = document.createElement("div");
-        O.className = "css-group-title", O.textContent = u, this.cssBody.append(O), Z = u;
+    let Q = "";
+    for (const [f, y, w] of r) {
+      if (f !== Q) {
+        const j = document.createElement("div");
+        j.className = "css-group-title", j.textContent = f, this.cssBody.append(j), Q = f;
       }
       const P = document.createElement("div");
       P.className = "css-entry";
-      const j = document.createElement("span");
-      j.className = "css-prop", j.textContent = b;
+      const O = document.createElement("span");
+      O.className = "css-prop", O.textContent = y;
       const D = document.createElement("span");
-      D.className = "css-val", D.textContent = w, D.title = w, P.append(j, D), this.cssBody.append(P);
+      D.className = "css-val", D.textContent = w, D.title = w, P.append(O, D), this.cssBody.append(P);
     }
   }
   // ---------- reads ----------
   markFlow() {
     const t = ["none", "col", "row", "wrap"].indexOf(this.flow);
-    this.flowBtns.forEach((e, s) => e.classList.toggle("on", s === t));
-    for (const e of this.layoutOnly) e.classList.toggle("disabled", this.flow === "none");
+    this.flowBtns.forEach((s, e) => s.classList.toggle("on", e === t));
+    for (const s of this.layoutOnly) s.classList.toggle("disabled", this.flow === "none");
   }
-  markAlign(t, e) {
-    this.alignBtns.forEach((s, o) => s.classList.toggle("on", o === t * 3 + e));
+  markAlign(t, s) {
+    this.alignBtns.forEach((e, o) => e.classList.toggle("on", o === t * 3 + s));
   }
   focusWithin() {
     const t = this.root.getRootNode();
     return t instanceof ShadowRoot && this.root.contains(t.activeElement);
   }
   populate(t) {
-    const e = getComputedStyle(t), s = t.getBoundingClientRect();
-    e.display.includes("flex") ? this.flow = e.flexDirection.startsWith("column") ? "col" : e.flexWrap === "wrap" ? "wrap" : "row" : this.flow = "none", this.markFlow(), this.wInput.value = String(Math.round(s.width)), this.hInput.value = String(Math.round(s.height));
-    const o = et(e.justifyContent), i = et(e.alignItems);
-    this.markAlign(this.flow === "col" ? o : i, this.flow === "col" ? i : o), this.gapInput.value = String(e.columnGap === "normal" ? 0 : F(e.columnGap));
-    const n = [e.paddingLeft, e.paddingTop, e.paddingRight, e.paddingBottom].map(F), a = n[0] === n[2] && n[1] === n[3];
-    this.setPadMode(!a), this.padXInput.value = String(n[0]), this.padYInput.value = String(n[1]), this.padSides.forEach((d, h) => d.value = String(n[h])), this.clipInput.checked = e.overflowX !== "visible", this.opacityInput.value = String(Math.round(parseFloat(e.opacity) * 100)), this.radiusInput.value = String(F(e.borderTopLeftRadius));
-    const l = tt(e.backgroundColor);
-    this.fillColor.value = l.hex, this.fillPct.value = String(Math.round(l.alpha * 100));
-    const c = tt(e.borderTopColor);
-    this.strokeColor.value = c.hex, this.strokeWidth.value = String(parseFloat(e.borderTopWidth) || 0), this.cssOpen && this.renderCSS(t);
+    const s = getComputedStyle(t), e = t.getBoundingClientRect();
+    s.display.includes("flex") ? this.flow = s.flexDirection.startsWith("column") ? "col" : s.flexWrap === "wrap" ? "wrap" : "row" : this.flow = "none", this.markFlow(), this.wInput.value = String(Math.round(e.width)), this.hInput.value = String(Math.round(e.height));
+    const o = ot(s.justifyContent), r = ot(s.alignItems);
+    this.markAlign(this.flow === "col" ? o : r, this.flow === "col" ? r : o), this.gapInput.value = String(s.columnGap === "normal" ? 0 : H(s.columnGap));
+    const n = [s.paddingLeft, s.paddingTop, s.paddingRight, s.paddingBottom].map(H), l = n[0] === n[2] && n[1] === n[3];
+    this.setPadMode(!l), this.padXInput.value = String(n[0]), this.padYInput.value = String(n[1]), this.padSides.forEach((h, d) => h.value = String(n[d])), this.clipInput.checked = s.overflowX !== "visible", this.opacityInput.value = String(Math.round(parseFloat(s.opacity) * 100)), this.radiusInput.value = String(H(s.borderTopLeftRadius));
+    const a = st(s.backgroundColor);
+    this.fillColor.value = a.hex, this.fillPct.value = String(Math.round(a.alpha * 100));
+    const c = st(s.borderTopColor);
+    this.strokeColor.value = c.hex, this.strokeWidth.value = String(parseFloat(s.borderTopWidth) || 0), this.cssOpen && this.renderCSS(t);
   }
   // ---------- public ----------
   setTarget(t) {
@@ -1286,86 +1313,123 @@ class Ct {
     this.focusWithin() || (this.wInput.value = String(Math.round(t.width)), this.hInput.value = String(Math.round(t.height)));
   }
 }
-function Pt(r, t, e) {
-  const s = [], o = [], i = (p) => {
-    s.push(p.left, p.right, p.left + p.width / 2), o.push(p.top, p.bottom, p.top + p.height / 2);
-  }, n = r.parentElement;
-  if (n && n !== document.body && i(n.getBoundingClientRect()), n) {
+function Bt(i, t, s) {
+  const e = [], o = [], r = (p) => {
+    e.push(p.left, p.right, p.left + p.width / 2), o.push(p.top, p.bottom, p.top + p.height / 2);
+  }, n = i.parentElement;
+  if (n && n !== document.body && r(n.getBoundingClientRect()), n) {
     let p = 0;
-    for (const f of Array.from(n.children)) {
-      if (f === r || !(f instanceof HTMLElement)) continue;
-      const x = f.getBoundingClientRect();
-      if (!(x.width === 0 && x.height === 0) && (i(x), ++p >= 30))
+    for (const g of Array.from(n.children)) {
+      if (g === i || !(g instanceof HTMLElement)) continue;
+      const b = g.getBoundingClientRect();
+      if (!(b.width === 0 && b.height === 0) && (r(b), ++p >= 30))
         break;
     }
   }
-  const a = [t.left, t.left + t.width, t.left + t.width / 2], l = [t.top, t.top + t.height, t.top + t.height / 2], c = (p, f) => {
-    let x = e + 1, y = null;
-    for (const E of p)
-      for (const k of f) {
-        const C = Math.abs(k - E);
-        C < x && (x = C, y = { adj: k - E, guide: k });
+  const l = [t.left, t.left + t.width, t.left + t.width / 2], a = [t.top, t.top + t.height, t.top + t.height / 2], c = (p, g) => {
+    let b = s + 1, x = null;
+    for (const S of p)
+      for (const k of g) {
+        const C = Math.abs(k - S);
+        C < b && (b = C, x = { adj: k - S, guide: k });
       }
-    return y;
-  }, d = c(a, s), h = c(l, o);
+    return x;
+  }, h = c(l, e), d = c(a, o);
   return {
-    adjX: (d == null ? void 0 : d.adj) ?? 0,
-    adjY: (h == null ? void 0 : h.adj) ?? 0,
-    guideV: (d == null ? void 0 : d.guide) ?? null,
-    guideH: (h == null ? void 0 : h.guide) ?? null
+    adjX: (h == null ? void 0 : h.adj) ?? 0,
+    adjY: (d == null ? void 0 : d.adj) ?? 0,
+    guideV: (h == null ? void 0 : h.guide) ?? null,
+    guideH: (d == null ? void 0 : d.guide) ?? null
   };
 }
-const g = Math.round;
-function Bt(r) {
-  const t = r.el.getBoundingClientRect();
+const u = Math.round;
+function ct(i) {
+  const t = i.el.getBoundingClientRect();
   return { x: t.left + window.scrollX, y: t.top + window.scrollY, w: t.width, h: t.height };
 }
-function st(r) {
-  const t = g(r);
+function nt(i) {
+  const t = u(i);
   return t > 0 ? `+${t}` : `${t}`;
 }
-function ot(r) {
-  const t = r.filter((s) => s.el.isConnected), e = [
+function X(i) {
+  const t = i.filter((e) => e.el.isConnected), s = [
     `# Sidetation 视觉修改记录（${t.length} 处）`,
     "",
     `- 页面：${location.href}`,
     `- 视口：${window.innerWidth}×${window.innerHeight}`,
     ""
   ];
-  return t.forEach((s, o) => {
-    const i = s.originalRect;
-    if (e.push(`## ${o + 1}. \`${s.selector}\``), e.push(`- 元素：\`<${s.tag}>\``), s.deleted) {
-      e.push("- **删除该元素**"), e.push(`- 原始盒（页面坐标）：x ${g(i.x)}，y ${g(i.y)}，w ${g(i.w)}，h ${g(i.h)}`), e.push("");
+  return t.forEach((e, o) => {
+    const r = e.originalRect;
+    if (s.push(`## ${o + 1}. \`${e.selector}\``), s.push(`- 元素：\`<${e.tag}>\``), e.deleted) {
+      s.push("- **删除该元素**"), s.push(`- 原始盒（页面坐标）：x ${u(r.x)}，y ${u(r.y)}，w ${u(r.w)}，h ${u(r.h)}`), s.push("");
       return;
     }
-    const n = Bt(s);
-    s.moved && e.push(`- 移动：Δx ${st(s.dx)}px，Δy ${st(s.dy)}px`), s.resized && e.push(
-      `- 尺寸：${g(s.startSize.w)}×${g(s.startSize.h)} → ${g(s.size.w)}×${g(s.size.h)}`
+    const n = ct(e);
+    e.moved && s.push(`- 移动：Δx ${nt(e.dx)}px，Δy ${nt(e.dy)}px`), e.resized && s.push(
+      `- 尺寸：${u(e.startSize.w)}×${u(e.startSize.h)} → ${u(e.size.w)}×${u(e.size.h)}`
     );
-    const a = Object.entries(s.props);
-    if (a.length && e.push(`- 样式：${a.map(([l, c]) => `\`${l}: ${c}\``).join("，")}`), s.text !== null) {
-      const l = (c) => (c ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
-      e.push(`- 文字："${l(s.savedText)}" → "${l(s.text)}"`);
+    const l = Object.entries(e.props);
+    if (l.length && s.push(`- 样式：${l.map(([a, c]) => `\`${a}: ${c}\``).join("，")}`), e.text !== null) {
+      const a = (c) => (c ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
+      s.push(`- 文字："${a(e.savedText)}" → "${a(e.text)}"`);
     }
-    e.push(`- 原始盒（页面坐标）：x ${g(i.x)}，y ${g(i.y)}，w ${g(i.w)}，h ${g(i.h)}`), e.push(`- 修改后：x ${g(n.x)}，y ${g(n.y)}，w ${g(n.w)}，h ${g(n.h)}`), e.push("");
-  }), e.push("---"), e.push(
+    s.push(`- 原始盒（页面坐标）：x ${u(r.x)}，y ${u(r.y)}，w ${u(r.w)}，h ${u(r.h)}`), s.push(`- 修改后：x ${u(n.x)}，y ${u(n.y)}，w ${u(n.w)}，h ${u(n.h)}`), s.push("");
+  }), s.push("---"), s.push(
     "请把以上视觉改动落实到源码中：根据元素所在布局选择合适的方式（margin / padding / flex / grid / gap / width / height 等），不要直接照抄 transform 位移，那只是编辑器里的临时表现。"
-  ), e.join(`
+  ), s.join(`
 `);
 }
-function nt(r) {
-  return r.filter((s) => s.el.isConnected).map((s) => {
+function Tt(i) {
+  return { x: u(i.x), y: u(i.y), w: u(i.w), h: u(i.h) };
+}
+function Lt(i) {
+  const s = i.filter((e) => e.el.isConnected).map((e) => {
+    const o = e.originalRect;
+    return {
+      selector: e.selector,
+      tag: e.tag,
+      deleted: e.deleted,
+      moved: e.moved,
+      dx: u(e.dx),
+      dy: u(e.dy),
+      resized: e.resized,
+      startSize: { w: u(e.startSize.w), h: u(e.startSize.h) },
+      size: { w: u(e.size.w), h: u(e.size.h) },
+      props: { ...e.props },
+      text: e.text === null ? null : { before: e.savedText, after: e.text },
+      originalRect: { x: u(o.x), y: u(o.y), w: u(o.w), h: u(o.h) },
+      currentRect: e.deleted ? null : Tt(ct(e))
+    };
+  });
+  return {
+    version: 1,
+    page: {
+      url: location.href,
+      origin: location.origin,
+      path: location.pathname,
+      title: document.title
+    },
+    viewport: { w: window.innerWidth, h: window.innerHeight },
+    count: s.length,
+    markdown: X(i),
+    css: Y(i),
+    edits: s
+  };
+}
+function Y(i) {
+  return i.filter((e) => e.el.isConnected).map((e) => {
     const o = [];
-    if (s.deleted)
+    if (e.deleted)
       o.push("  display: none;");
     else {
-      s.moved && o.push(`  transform: translate(${g(s.dx)}px, ${g(s.dy)}px);`), s.resized && (o.push(`  width: ${g(s.size.w - s.sizeAdj.w)}px;`), o.push(`  height: ${g(s.size.h - s.sizeAdj.h)}px;`));
-      for (const [n, a] of Object.entries(s.props)) o.push(`  ${n}: ${a};`);
+      e.moved && o.push(`  transform: translate(${u(e.dx)}px, ${u(e.dy)}px);`), e.resized && (o.push(`  width: ${u(e.size.w - e.sizeAdj.w)}px;`), o.push(`  height: ${u(e.size.h - e.sizeAdj.h)}px;`));
+      for (const [n, l] of Object.entries(e.props)) o.push(`  ${n}: ${l};`);
     }
-    return `${`/* ${s.tag}: ${g(s.startSize.w)}×${g(s.startSize.h)} @ (${g(
-      s.originalRect.x
-    )}, ${g(s.originalRect.y)}) */`}
-${s.selector} {
+    return `${`/* ${e.tag}: ${u(e.startSize.w)}×${u(e.startSize.h)} @ (${u(
+      e.originalRect.x
+    )}, ${u(e.originalRect.y)}) */`}
+${e.selector} {
 ${o.join(`
 `)}
 }`;
@@ -1374,50 +1438,50 @@ ${o.join(`
 `) + `
 `;
 }
-function X() {
+function V() {
   return `sidetation:${location.origin}${location.pathname}`;
 }
-function Lt(r) {
-  const t = r.filter((e) => e.el.isConnected);
+function Rt(i) {
+  const t = i.filter((s) => s.el.isConnected);
   try {
     if (t.length === 0) {
-      localStorage.removeItem(X());
+      localStorage.removeItem(V());
       return;
     }
-    const e = t.map((s) => ({
-      selector: s.selector,
-      dx: s.dx,
-      dy: s.dy,
-      moved: s.moved,
-      resized: s.resized,
-      deleted: s.deleted,
-      startSize: s.startSize,
-      size: s.size,
-      savedText: s.savedText,
-      text: s.text,
-      props: s.props,
-      savedProps: s.savedProps
+    const s = t.map((e) => ({
+      selector: e.selector,
+      dx: e.dx,
+      dy: e.dy,
+      moved: e.moved,
+      resized: e.resized,
+      deleted: e.deleted,
+      startSize: e.startSize,
+      size: e.size,
+      savedText: e.savedText,
+      text: e.text,
+      props: e.props,
+      savedProps: e.savedProps
     }));
-    localStorage.setItem(X(), JSON.stringify(e));
+    localStorage.setItem(V(), JSON.stringify(s));
   } catch {
   }
 }
-function Tt() {
+function At() {
   try {
-    const r = localStorage.getItem(X());
-    return r ? JSON.parse(r) : null;
+    const i = localStorage.getItem(V());
+    return i ? JSON.parse(i) : null;
   } catch {
     return null;
   }
 }
-class Rt {
-  constructor(t, e) {
-    this.root = t, this.host = e, this.countEl = document.createElement("div"), this.countEl.className = "align-title", this.root.append(this.countEl), this.buildAlignRow(), this.buildDistributeRow();
+class Mt {
+  constructor(t, s) {
+    this.root = t, this.host = s, this.countEl = document.createElement("div"), this.countEl.className = "align-title", this.root.append(this.countEl), this.buildAlignRow(), this.buildDistributeRow();
   }
   buildAlignRow() {
     const t = document.createElement("div");
     t.className = "align-row";
-    const e = [
+    const s = [
       ["left", "⇤", "左对齐"],
       ["hcenter", "↔", "水平居中对齐"],
       ["right", "⇥", "右对齐"],
@@ -1425,9 +1489,9 @@ class Rt {
       ["vcenter", "↕", "垂直居中对齐"],
       ["bottom", "⤓", "底对齐"]
     ];
-    for (const [s, o, i] of e) {
+    for (const [e, o, r] of s) {
       const n = document.createElement("button");
-      n.textContent = o, n.title = i, n.addEventListener("click", () => this.host.align(s)), t.append(n);
+      n.textContent = o, n.title = r, n.addEventListener("click", () => this.host.align(e)), t.append(n);
     }
     this.root.append(t);
   }
@@ -1437,166 +1501,173 @@ class Rt {
   }
   show(t) {
     this.root.classList.add("open"), this.countEl.textContent = `已选 ${t} 个`;
-    const e = t >= 3;
-    this.distHBtn.disabled = !e, this.distVBtn.disabled = !e;
+    const s = t >= 3;
+    this.distHBtn.disabled = !s, this.distVBtn.disabled = !s;
   }
   hide() {
     this.root.classList.remove("open");
   }
 }
-const At = 3;
-class Mt {
+const Dt = 3;
+class It {
   constructor(t = {}) {
-    this.overlay = new pt(), this.history = new kt(), this.active = !1, this.hovered = null, this.selected = [], this.drag = null, this.resize = null, this.textEdit = null, this.lastDownAt = 0, this.lastDownTarget = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
+    this.overlay = new ut(), this.history = new Et(), this.active = !1, this.hovered = null, this.selected = [], this.drag = null, this.resize = null, this.textEdit = null, this.lastDownAt = 0, this.lastDownTarget = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
       if (this.selected.length > 0) {
-        const e = this.selected.filter((s) => s.isConnected);
-        e.length !== this.selected.length && (this.selected = e);
+        const s = this.selected.filter((e) => e.isConnected);
+        s.length !== this.selected.length && (this.selected = s);
       }
       if (this.selected.length === 1) {
-        const s = this.selected[0].getBoundingClientRect();
-        this.overlay.setSelection(s, this.selectionLabel()), this.propsPanel.refreshRect(s), this.overlay.setMultiSelection([]), this.alignPanel.hide();
+        const e = this.selected[0].getBoundingClientRect();
+        this.overlay.setSelection(e, this.selectionLabel()), this.propsPanel.refreshRect(e), this.overlay.setMultiSelection([]), this.alignPanel.hide();
       } else if (this.selected.length > 1) {
-        const e = this.selected.map((s) => s.getBoundingClientRect());
-        this.overlay.setSelection(null), this.overlay.setMultiSelection(e), this.overlay.positionAlignPanel(e), this.alignPanel.show(this.selected.length);
+        const s = this.selected.map((e) => e.getBoundingClientRect());
+        this.overlay.setSelection(null), this.overlay.setMultiSelection(s), this.overlay.positionAlignPanel(s), this.alignPanel.show(this.selected.length);
       } else
         this.overlay.setSelection(null), this.overlay.setMultiSelection([]), this.alignPanel.hide();
       this.hovered && this.hovered.isConnected && !this.selected.includes(this.hovered) ? this.overlay.setHover(this.hovered.getBoundingClientRect()) : this.overlay.setHover(null), this.rafId = requestAnimationFrame(this.loop);
-    }, this.onPointerMove = (e) => {
+    }, this.onPointerMove = (s) => {
       if (this.resize) {
-        this.moveResize(e);
+        this.moveResize(s);
         return;
       }
       if (this.drag) {
-        this.moveDrag(e);
+        this.moveDrag(s);
         return;
       }
-      if (this.inOverlay(e)) {
+      if (this.inOverlay(s)) {
         this.hovered = null;
         return;
       }
-      this.hovered = this.pageElementAt(e.clientX, e.clientY);
-    }, this.onPointerDown = (e) => {
-      if (this.inOverlay(e)) return;
+      this.hovered = this.pageElementAt(s.clientX, s.clientY);
+    }, this.onPointerDown = (s) => {
+      if (this.inOverlay(s)) return;
       if (this.textEdit) {
-        if (e.composedPath().includes(this.textEdit.el)) return;
+        if (s.composedPath().includes(this.textEdit.el)) return;
         this.commitTextEdit();
       }
-      if (e.preventDefault(), e.stopPropagation(), e.altKey && this.selected.length === 1) {
-        const l = this.selected[0].parentElement;
-        this.isSelectable(l) && this.select([l]);
+      if (s.preventDefault(), s.stopPropagation(), s.altKey && this.selected.length === 1) {
+        const a = this.selected[0].parentElement;
+        this.isSelectable(a) && this.select([a]);
         return;
       }
-      const s = this.pageElementAt(e.clientX, e.clientY);
-      if (!s) {
+      const e = this.pageElementAt(s.clientX, s.clientY);
+      if (!e) {
         this.select([]);
         return;
       }
-      if (e.shiftKey) {
-        this.toggleSelect(s);
+      if (s.shiftKey) {
+        this.toggleSelect(e);
         return;
       }
       const o = Date.now();
-      if (s === this.lastDownTarget && o - this.lastDownAt < 400) {
-        this.lastDownAt = 0, this.startTextEdit(s);
+      if (e === this.lastDownTarget && o - this.lastDownAt < 400) {
+        this.lastDownAt = 0, this.startTextEdit(e);
         return;
       }
-      this.lastDownAt = o, this.lastDownTarget = s;
-      const i = this.selected.length === 1 ? this.selected[0] : null, n = i !== null && (s === i || i.contains(s)), a = this.selected.length > 1 && this.selected.includes(s);
-      !n && !a && this.select([s]), this.drag = {
+      this.lastDownAt = o, this.lastDownTarget = e;
+      const r = this.selected.length === 1 ? this.selected[0] : null, n = r !== null && (e === r || r.contains(e)), l = this.selected.length > 1 && this.selected.includes(e);
+      !n && !l && this.select([e]), this.drag = {
         els: this.selected,
-        startX: e.clientX,
-        startY: e.clientY,
+        startX: s.clientX,
+        startY: s.clientY,
         items: null,
         moved: !1,
-        downTarget: s
+        downTarget: e
       };
-    }, this.onPointerUp = (e) => {
+    }, this.onPointerUp = (s) => {
       if (this.resize) {
-        const s = this.resize;
-        this.resize = null, document.documentElement.style.cursor = "", this.history.commit(s.rec, s.before);
+        const e = this.resize;
+        this.resize = null, document.documentElement.style.cursor = "", this.history.commit(e.rec, e.before);
         return;
       }
       if (this.drag) {
-        const s = this.drag;
-        this.drag = null, this.overlay.setGuides(null, null), document.documentElement.style.cursor = "", s.moved && s.items ? this.history.commitBatch(s.items.map(({ rec: o, before: i }) => ({ rec: o, before: i }))) : this.selected.length === 1 && this.selected[0] === s.downTarget || this.select([s.downTarget]), e.preventDefault(), e.stopPropagation();
+        const e = this.drag;
+        this.drag = null, this.overlay.setGuides(null, null), document.documentElement.style.cursor = "", e.moved && e.items ? this.history.commitBatch(e.items.map(({ rec: o, before: r }) => ({ rec: o, before: r }))) : this.selected.length === 1 && this.selected[0] === e.downTarget || this.select([e.downTarget]), s.preventDefault(), s.stopPropagation();
       }
-    }, this.blockEvent = (e) => {
-      this.inOverlay(e) || this.textEdit && e.composedPath().includes(this.textEdit.el) || (e.preventDefault(), e.stopImmediatePropagation());
-    }, this.onKeyDown = (e) => {
-      if (this.inOverlay(e)) return;
+    }, this.blockEvent = (s) => {
+      this.inOverlay(s) || this.textEdit && s.composedPath().includes(this.textEdit.el) || (s.preventDefault(), s.stopImmediatePropagation());
+    }, this.onKeyDown = (s) => {
+      if (this.inOverlay(s)) return;
       if (this.textEdit) {
-        e.key === "Escape" && (e.preventDefault(), e.stopPropagation(), this.commitTextEdit());
+        s.key === "Escape" && (s.preventDefault(), s.stopPropagation(), this.commitTextEdit());
         return;
       }
-      const s = e.metaKey || e.ctrlKey;
-      if (e.key === "Escape") {
-        e.preventDefault(), e.stopPropagation(), this.selected.length > 0 ? this.select([]) : this.deactivate();
+      const e = s.metaKey || s.ctrlKey;
+      if (s.key === "Escape") {
+        s.preventDefault(), s.stopPropagation(), this.selected.length > 0 ? this.select([]) : this.deactivate();
         return;
       }
-      if (s && (e.key === "z" || e.key === "Z")) {
-        e.preventDefault(), e.stopPropagation(), (e.shiftKey ? this.history.redo() : this.history.undo()) && this.overlay.toast(e.shiftKey ? "重做" : "撤销");
+      if (e && (s.key === "z" || s.key === "Z")) {
+        s.preventDefault(), s.stopPropagation(), (s.shiftKey ? this.history.redo() : this.history.undo()) && this.overlay.toast(s.shiftKey ? "重做" : "撤销");
         return;
       }
       if (this.selected.length === 0) return;
-      if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault(), e.stopPropagation();
-        const l = this.selected.length, c = this.selected.map((d) => {
-          const h = this.history.ensure(d), p = this.history.snapshot(h);
-          return h.deleted = !0, { rec: h, before: p };
+      if (s.key === "Delete" || s.key === "Backspace") {
+        s.preventDefault(), s.stopPropagation();
+        const a = this.selected.length, c = this.selected.map((h) => {
+          const d = this.history.ensure(h), p = this.history.snapshot(d);
+          return d.deleted = !0, { rec: d, before: p };
         });
-        this.select([]), this.history.commitBatch(c), this.overlay.toast(l > 1 ? `已删除 ${l} 个元素（⌘Z 撤销）` : "已删除（⌘Z 撤销）");
+        this.select([]), this.history.commitBatch(c), this.overlay.toast(a > 1 ? `已删除 ${a} 个元素（⌘Z 撤销）` : "已删除（⌘Z 撤销）");
         return;
       }
       if (this.selected.length === 1) {
-        const l = this.selected[0];
-        if (e.key === "Enter") {
-          e.preventDefault(), e.stopPropagation();
-          const c = e.shiftKey ? l.parentElement : l.firstElementChild;
+        const a = this.selected[0];
+        if (s.key === "Enter") {
+          s.preventDefault(), s.stopPropagation();
+          const c = s.shiftKey ? a.parentElement : a.firstElementChild;
           this.isSelectable(c) && this.select([c]);
           return;
         }
-        if (e.key === "Tab") {
-          e.preventDefault(), e.stopPropagation();
-          const c = e.shiftKey ? l.previousElementSibling : l.nextElementSibling;
+        if (s.key === "Tab") {
+          s.preventDefault(), s.stopPropagation();
+          const c = s.shiftKey ? a.previousElementSibling : a.nextElementSibling;
           this.isSelectable(c) && this.select([c]);
           return;
         }
       }
-      const o = e.shiftKey ? 10 : 1, n = {
+      const o = s.shiftKey ? 10 : 1, n = {
         ArrowLeft: [-o, 0],
         ArrowRight: [o, 0],
         ArrowUp: [0, -o],
         ArrowDown: [0, o]
-      }[e.key];
+      }[s.key];
       if (!n) return;
-      e.preventDefault(), e.stopPropagation();
-      const a = this.selected.map((l) => {
-        const c = this.history.ensure(l), d = this.history.snapshot(c);
-        return c.dx += n[0], c.dy += n[1], c.moved = !0, { rec: c, before: d };
+      s.preventDefault(), s.stopPropagation();
+      const l = this.selected.map((a) => {
+        const c = this.history.ensure(a), h = this.history.snapshot(c);
+        return c.dx += n[0], c.dy += n[1], c.moved = !0, { rec: c, before: h };
       });
-      this.history.commitBatch(a, { coalesce: "nudge" });
-    }, this.opts = { autoStart: !1, snapThreshold: 6, ...t }, this.toolbar = new zt(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
+      this.history.commitBatch(l, { coalesce: "nudge" });
+    }, this.opts = {
+      autoStart: !1,
+      snapThreshold: 6,
+      enableMcpSync: !1,
+      mcpEndpoint: "http://127.0.0.1:8787",
+      ...t
+    }, this.toolbar = new $t(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
       onToggle: () => this.active ? this.deactivate() : this.activate(),
-      onCopyMd: () => this.copy(ot(this.history.all()), "已复制 Markdown"),
-      onCopyCss: () => this.copy(nt(this.history.all()), "已复制 CSS"),
+      onCopyMd: () => this.copy(X(this.history.all()), "已复制 Markdown"),
+      onCopyCss: () => this.copy(Y(this.history.all()), "已复制 CSS"),
+      onSync: () => this.syncToMcp(),
       onReset: () => this.history.resetAll(),
-      onRevert: (e) => this.history.revert(e)
-    }), this.propsPanel = new Ct(this.overlay.propsEl, {
-      setProps: (e) => this.panelSetProps(e),
-      setSize: (e, s) => this.panelSetSize(e, s)
-    }), this.alignPanel = new Rt(this.overlay.alignEl, {
-      align: (e) => this.alignSelected(e),
-      distribute: (e) => this.distributeSelected(e)
+      onRevert: (s) => this.history.revert(s)
+    }, this.opts.enableMcpSync), this.propsPanel = new Pt(this.overlay.propsEl, {
+      setProps: (s) => this.panelSetProps(s),
+      setSize: (s, e) => this.panelSetSize(s, e)
+    }), this.alignPanel = new Mt(this.overlay.alignEl, {
+      align: (s) => this.alignSelected(s),
+      distribute: (s) => this.distributeSelected(s)
     }), this.history.onChange = () => {
-      this.syncUI(), Lt(this.history.all());
-    }, this.overlay.onHandleDown = (e, s) => this.startResize(e, s), this.restoreSession(), this.syncUI(), this.opts.autoStart && this.activate();
+      this.syncUI(), Rt(this.history.all());
+    }, this.overlay.onHandleDown = (s, e) => this.startResize(s, e), this.restoreSession(), this.syncUI(), this.opts.autoStart && this.activate();
   }
   /** re-apply edits saved from a previous session on this page, if any */
   restoreSession() {
-    const t = Tt();
+    const t = At();
     if (!t || t.length === 0) return;
-    const e = this.history.restore(t);
-    e > 0 && this.overlay.toast(`${e} 处修改因页面结构变化未能恢复`);
+    const s = this.history.restore(t);
+    s > 0 && this.overlay.toast(`${s} 处修改因页面结构变化未能恢复`);
   }
   // ---------- lifecycle ----------
   activate() {
@@ -1611,14 +1682,14 @@ class Mt {
   }
   selectionLabel() {
     if (this.selected.length !== 1) return "";
-    const t = this.selected[0], e = t.getBoundingClientRect();
-    return `${mt(t)}  ${Math.round(e.width)}×${Math.round(e.height)}`;
+    const t = this.selected[0], s = t.getBoundingClientRect();
+    return `${xt(t)}  ${Math.round(s.width)}×${Math.round(s.height)}`;
   }
   // ---------- element picking ----------
-  pageElementAt(t, e) {
-    let s = document.elementFromPoint(t, e);
-    for (; s && !(s instanceof HTMLElement); ) s = s.parentElement;
-    return !s || s === document.body || s === document.documentElement || s.closest("[data-sidetation]") ? null : s;
+  pageElementAt(t, s) {
+    let e = document.elementFromPoint(t, s);
+    for (; e && !(e instanceof HTMLElement); ) e = e.parentElement;
+    return !e || e === document.body || e === document.documentElement || e.closest("[data-sidetation]") ? null : e;
   }
   inOverlay(t) {
     return t.composedPath().includes(this.overlay.host);
@@ -1628,10 +1699,10 @@ class Mt {
   }
   /** Shift+click: add/remove one element from the current selection */
   toggleSelect(t) {
-    const e = this.selected.indexOf(t);
-    if (e >= 0) {
-      const s = this.selected.slice();
-      s.splice(e, 1), this.select(s);
+    const s = this.selected.indexOf(t);
+    if (s >= 0) {
+      const e = this.selected.slice();
+      e.splice(s, 1), this.select(e);
     } else
       this.select([...this.selected, t]);
   }
@@ -1645,164 +1716,185 @@ class Mt {
       return;
     }
     this.select([t]);
-    const e = this.history.ensure(t);
+    const s = this.history.ensure(t);
     this.textEdit = {
       el: t,
-      rec: e,
-      before: this.history.snapshot(e),
+      rec: s,
+      before: this.history.snapshot(s),
       savedUserSelect: t.style.getPropertyValue("user-select")
     }, t.setAttribute("contenteditable", "plaintext-only"), t.isContentEditable || t.setAttribute("contenteditable", "true"), t.style.setProperty("user-select", "text"), t.focus();
-    const s = document.createRange();
-    s.selectNodeContents(t);
+    const e = document.createRange();
+    e.selectNodeContents(t);
     const o = window.getSelection();
-    o == null || o.removeAllRanges(), o == null || o.addRange(s);
+    o == null || o.removeAllRanges(), o == null || o.addRange(e);
   }
   commitTextEdit() {
-    var s;
+    var e;
     const t = this.textEdit;
     if (!t) return;
-    this.textEdit = null, t.el.removeAttribute("contenteditable"), t.savedUserSelect ? t.el.style.setProperty("user-select", t.savedUserSelect) : t.el.style.removeProperty("user-select"), (s = window.getSelection()) == null || s.removeAllRanges();
-    const e = t.el.textContent ?? "";
-    t.rec.text = e === t.rec.savedText ? null : e, this.history.commit(t.rec, t.before);
+    this.textEdit = null, t.el.removeAttribute("contenteditable"), t.savedUserSelect ? t.el.style.setProperty("user-select", t.savedUserSelect) : t.el.style.removeProperty("user-select"), (e = window.getSelection()) == null || e.removeAllRanges();
+    const s = t.el.textContent ?? "";
+    t.rec.text = s === t.rec.savedText ? null : s, this.history.commit(t.rec, t.before);
   }
   // ---------- drag ----------
   moveDrag(t) {
-    const e = this.drag, s = t.clientX - e.startX, o = t.clientY - e.startY;
-    if (!e.moved) {
-      if (Math.hypot(s, o) < At) return;
-      e.moved = !0, e.items = e.els.map((n) => {
-        const a = this.history.ensure(n);
-        return { rec: a, before: this.history.snapshot(a), baseDx: a.dx, baseDy: a.dy };
+    const s = this.drag, e = t.clientX - s.startX, o = t.clientY - s.startY;
+    if (!s.moved) {
+      if (Math.hypot(e, o) < Dt) return;
+      s.moved = !0, s.items = s.els.map((n) => {
+        const l = this.history.ensure(n);
+        return { rec: l, before: this.history.snapshot(l), baseDx: l.dx, baseDy: l.dy };
       }), document.documentElement.style.cursor = "move";
     }
-    const i = e.items;
-    if (i.length === 1) {
-      const { rec: n, baseDx: a, baseDy: l } = i[0];
-      let c = a + s, d = l + o;
-      const h = e.els[0].getBoundingClientRect(), p = {
-        left: h.left + (c - n.dx),
-        top: h.top + (d - n.dy),
-        width: h.width,
-        height: h.height
-      }, f = Pt(e.els[0], p, this.opts.snapThreshold);
-      c += f.adjX, d += f.adjY, this.overlay.setGuides(f.guideV, f.guideH), n.dx = c, n.dy = d, n.moved = !0, $(n);
+    const r = s.items;
+    if (r.length === 1) {
+      const { rec: n, baseDx: l, baseDy: a } = r[0];
+      let c = l + e, h = a + o;
+      const d = s.els[0].getBoundingClientRect(), p = {
+        left: d.left + (c - n.dx),
+        top: d.top + (h - n.dy),
+        width: d.width,
+        height: d.height
+      }, g = Bt(s.els[0], p, this.opts.snapThreshold);
+      c += g.adjX, h += g.adjY, this.overlay.setGuides(g.guideV, g.guideH), n.dx = c, n.dy = h, n.moved = !0, $(n);
     } else {
       this.overlay.setGuides(null, null);
-      for (const { rec: n, baseDx: a, baseDy: l } of i)
-        n.dx = a + s, n.dy = l + o, n.moved = !0, $(n);
+      for (const { rec: n, baseDx: l, baseDy: a } of r)
+        n.dx = l + e, n.dy = a + o, n.moved = !0, $(n);
     }
   }
   // ---------- resize ----------
-  startResize(t, e) {
+  startResize(t, s) {
     if (this.selected.length !== 1) return;
-    const s = this.selected[0];
-    e.preventDefault(), e.stopPropagation();
-    const o = this.history.ensure(s), i = s.getBoundingClientRect();
+    const e = this.selected[0];
+    s.preventDefault(), s.stopPropagation();
+    const o = this.history.ensure(e), r = e.getBoundingClientRect();
     this.resize = {
       rec: o,
       before: this.history.snapshot(o),
       dir: t,
-      startX: e.clientX,
-      startY: e.clientY,
-      startW: i.width,
-      startH: i.height,
+      startX: s.clientX,
+      startY: s.clientY,
+      startW: r.width,
+      startH: r.height,
       baseDx: o.dx,
       baseDy: o.dy
     };
   }
   moveResize(t) {
-    const e = this.resize, { rec: s, dir: o } = e, i = t.clientX - e.startX, n = t.clientY - e.startY;
-    let a = e.startW, l = e.startH;
-    if (o.includes("e") && (a = e.startW + i), o.includes("w") && (a = e.startW - i), o.includes("s") && (l = e.startH + n), o.includes("n") && (l = e.startH - n), t.shiftKey && e.startH > 0 && e.startW > 0) {
-      const c = e.startW / e.startH;
-      o === "e" || o === "w" ? l = a / c : o === "n" || o === "s" ? a = l * c : Math.abs(i) > Math.abs(n) ? l = a / c : a = l * c;
+    const s = this.resize, { rec: e, dir: o } = s, r = t.clientX - s.startX, n = t.clientY - s.startY;
+    let l = s.startW, a = s.startH;
+    if (o.includes("e") && (l = s.startW + r), o.includes("w") && (l = s.startW - r), o.includes("s") && (a = s.startH + n), o.includes("n") && (a = s.startH - n), t.shiftKey && s.startH > 0 && s.startW > 0) {
+      const c = s.startW / s.startH;
+      o === "e" || o === "w" ? a = l / c : o === "n" || o === "s" ? l = a * c : Math.abs(r) > Math.abs(n) ? a = l / c : l = a * c;
     }
-    a = Math.max(8, Math.round(a)), l = Math.max(8, Math.round(l)), s.dx = o.includes("w") ? e.baseDx + (e.startW - a) : e.baseDx, s.dy = o.includes("n") ? e.baseDy + (e.startH - l) : e.baseDy, (s.dx !== e.baseDx || s.dy !== e.baseDy) && (s.moved = !0), s.size = { w: a, h: l }, s.resized = !0, $(s);
+    l = Math.max(8, Math.round(l)), a = Math.max(8, Math.round(a)), e.dx = o.includes("w") ? s.baseDx + (s.startW - l) : s.baseDx, e.dy = o.includes("n") ? s.baseDy + (s.startH - a) : s.baseDy, (e.dx !== s.baseDx || e.dy !== s.baseDy) && (e.moved = !0), e.size = { w: l, h: a }, e.resized = !0, $(e);
   }
   // ---------- properties panel ----------
   panelSetProps(t) {
     if (this.selected.length !== 1) return;
-    const e = this.selected[0];
+    const s = this.selected[0];
     this.commitTextEdit();
-    const s = this.history.ensure(e), o = this.history.snapshot(s);
-    for (const [i, n] of Object.entries(t))
-      i in s.savedProps || (s.savedProps[i] = e.style.getPropertyValue(i)), n === null ? delete s.props[i] : s.props[i] = n;
-    this.history.commit(s, o, { coalesce: `props:${Object.keys(t).sort().join(",")}` });
+    const e = this.history.ensure(s), o = this.history.snapshot(e);
+    for (const [r, n] of Object.entries(t))
+      r in e.savedProps || (e.savedProps[r] = s.style.getPropertyValue(r)), n === null ? delete e.props[r] : e.props[r] = n;
+    this.history.commit(e, o, { coalesce: `props:${Object.keys(t).sort().join(",")}` });
   }
-  panelSetSize(t, e) {
+  panelSetSize(t, s) {
     if (this.selected.length !== 1) return;
     this.commitTextEdit();
-    const s = this.history.ensure(this.selected[0]), o = this.history.snapshot(s);
-    t !== null && (s.size.w = Math.max(8, t)), e !== null && (s.size.h = Math.max(8, e)), s.resized = !0, this.history.commit(s, o, { coalesce: "size" });
+    const e = this.history.ensure(this.selected[0]), o = this.history.snapshot(e);
+    t !== null && (e.size.w = Math.max(8, t)), s !== null && (e.size.h = Math.max(8, s)), e.resized = !0, this.history.commit(e, o, { coalesce: "size" });
   }
   // ---------- multi-select: align / distribute ----------
   alignSelected(t) {
     if (this.selected.length < 2) return;
-    const e = this.selected.map((d) => ({
-      rec: this.history.ensure(d),
-      rect: d.getBoundingClientRect()
-    })), s = e.map(({ rec: d }) => ({ rec: d, before: this.history.snapshot(d) })), o = Math.min(...e.map((d) => d.rect.left)), i = Math.max(...e.map((d) => d.rect.right)), n = Math.min(...e.map((d) => d.rect.top)), a = Math.max(...e.map((d) => d.rect.bottom)), l = (o + i) / 2, c = (n + a) / 2;
-    for (const { rec: d, rect: h } of e) {
-      let p = 0, f = 0;
+    const s = this.selected.map((h) => ({
+      rec: this.history.ensure(h),
+      rect: h.getBoundingClientRect()
+    })), e = s.map(({ rec: h }) => ({ rec: h, before: this.history.snapshot(h) })), o = Math.min(...s.map((h) => h.rect.left)), r = Math.max(...s.map((h) => h.rect.right)), n = Math.min(...s.map((h) => h.rect.top)), l = Math.max(...s.map((h) => h.rect.bottom)), a = (o + r) / 2, c = (n + l) / 2;
+    for (const { rec: h, rect: d } of s) {
+      let p = 0, g = 0;
       switch (t) {
         case "left":
-          p = o - h.left;
+          p = o - d.left;
           break;
         case "right":
-          p = i - h.right;
+          p = r - d.right;
           break;
         case "hcenter":
-          p = l - (h.left + h.width / 2);
+          p = a - (d.left + d.width / 2);
           break;
         case "top":
-          f = n - h.top;
+          g = n - d.top;
           break;
         case "bottom":
-          f = a - h.bottom;
+          g = l - d.bottom;
           break;
         case "vcenter":
-          f = c - (h.top + h.height / 2);
+          g = c - (d.top + d.height / 2);
           break;
       }
-      (p !== 0 || f !== 0) && (d.dx += p, d.dy += f, d.moved = !0, $(d));
+      (p !== 0 || g !== 0) && (h.dx += p, h.dy += g, h.moved = !0, $(h));
     }
-    this.history.commitBatch(s);
+    this.history.commitBatch(e);
   }
   distributeSelected(t) {
     if (this.selected.length < 3) return;
-    const e = this.selected.map((h) => ({
-      rec: this.history.ensure(h),
-      rect: h.getBoundingClientRect()
-    })), s = e.map(({ rec: h }) => ({ rec: h, before: this.history.snapshot(h) })), o = [...e].sort(
-      (h, p) => t === "h" ? h.rect.left - p.rect.left : h.rect.top - p.rect.top
-    ), i = o[0].rect, n = o[o.length - 1].rect, a = t === "h" ? n.right - i.left : n.bottom - i.top, l = o.reduce(
-      (h, p) => h + (t === "h" ? p.rect.width : p.rect.height),
+    const s = this.selected.map((d) => ({
+      rec: this.history.ensure(d),
+      rect: d.getBoundingClientRect()
+    })), e = s.map(({ rec: d }) => ({ rec: d, before: this.history.snapshot(d) })), o = [...s].sort(
+      (d, p) => t === "h" ? d.rect.left - p.rect.left : d.rect.top - p.rect.top
+    ), r = o[0].rect, n = o[o.length - 1].rect, l = t === "h" ? n.right - r.left : n.bottom - r.top, a = o.reduce(
+      (d, p) => d + (t === "h" ? p.rect.width : p.rect.height),
       0
-    ), c = (a - l) / (o.length - 1);
-    let d = t === "h" ? i.left : i.top;
-    for (const { rec: h, rect: p } of o) {
-      const f = t === "h" ? p.width : p.height, x = t === "h" ? p.left : p.top, y = d - x;
-      y !== 0 && (t === "h" ? h.dx += y : h.dy += y, h.moved = !0, $(h)), d += f + c;
+    ), c = (l - a) / (o.length - 1);
+    let h = t === "h" ? r.left : r.top;
+    for (const { rec: d, rect: p } of o) {
+      const g = t === "h" ? p.width : p.height, b = t === "h" ? p.left : p.top, x = h - b;
+      x !== 0 && (t === "h" ? d.dx += x : d.dy += x, d.moved = !0, $(d)), h += g + c;
     }
-    this.history.commitBatch(s);
+    this.history.commitBatch(e);
   }
   // ---------- output ----------
-  copy(t, e) {
+  copy(t, s) {
     var o;
-    const s = () => {
-      const i = document.createElement("textarea");
-      i.value = t, i.style.position = "fixed", i.style.opacity = "0", document.body.append(i), i.select(), document.execCommand("copy"), i.remove(), this.overlay.toast(e);
+    const e = () => {
+      const r = document.createElement("textarea");
+      r.value = t, r.style.position = "fixed", r.style.opacity = "0", document.body.append(r), r.select(), document.execCommand("copy"), r.remove(), this.overlay.toast(s);
     };
     (o = navigator.clipboard) != null && o.writeText ? navigator.clipboard.writeText(t).then(
-      () => this.overlay.toast(e),
-      () => s()
-    ) : s();
+      () => this.overlay.toast(s),
+      () => e()
+    ) : e();
+  }
+  /** POST the current edits to the local MCP bridge so an AI agent can read them */
+  async syncToMcp() {
+    const t = Lt(this.history.all());
+    if (t.count === 0) {
+      this.overlay.toast("没有可同步的修改");
+      return;
+    }
+    const s = `${this.opts.mcpEndpoint.replace(/\/$/, "")}/ingest`;
+    this.toolbar.setSyncState("syncing");
+    try {
+      const e = await fetch(s, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(t)
+      });
+      if (!e.ok) throw new Error(`HTTP ${e.status}`);
+      this.toolbar.setSyncState("idle"), this.overlay.toast(`已同步 ${t.count} 处修改到 MCP`);
+    } catch (e) {
+      this.toolbar.setSyncState("idle"), this.overlay.toast(`同步失败：本地 MCP 服务未启动？(${String(e)})`);
+    }
   }
   getMarkdown() {
-    return ot(this.history.all());
+    return X(this.history.all());
   }
   getCSS() {
-    return nt(this.history.all());
+    return Y(this.history.all());
   }
   get isActive() {
     return this.active;
@@ -1817,10 +1909,10 @@ class Mt {
     this.history.prune(), this.toolbar.update(this.active, this.history.all()), this.propsPanel.sync();
   }
 }
-function Dt(r) {
-  return new Mt(r);
+function Nt(i) {
+  return new It(i);
 }
 export {
-  Mt as Sidetation,
-  Dt as init
+  It as Sidetation,
+  Nt as init
 };

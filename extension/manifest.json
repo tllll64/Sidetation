@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sidetation",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "像设计师一样拖拽网页元素，导出结构化修改记录给 AI。点击图标开启/关闭编辑模式。",
   "permissions": ["activeTab", "scripting"],
   "action": {

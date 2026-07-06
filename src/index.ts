@@ -5,7 +5,7 @@ import { Toolbar } from './toolbar';
 import { PropsPanel } from './props-panel';
 import { computeSnap } from './snap';
 import { shortLabel } from './selector';
-import { toMarkdown, toCSS } from './export';
+import { toMarkdown, toCSS, toSyncPayload } from './export';
 import { applyRecord } from './apply';
 import { save as persistSave, load as persistLoad } from './persist';
 import { AlignPanel, type AlignMode } from './align-panel';
@@ -69,14 +69,21 @@ export class Sidetation {
   private savedUserSelect = '';
 
   constructor(options: SidetationOptions = {}) {
-    this.opts = { autoStart: false, snapThreshold: 6, ...options };
+    this.opts = {
+      autoStart: false,
+      snapThreshold: 6,
+      enableMcpSync: false,
+      mcpEndpoint: 'http://127.0.0.1:8787',
+      ...options,
+    };
     this.toolbar = new Toolbar(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
       onToggle: () => (this.active ? this.deactivate() : this.activate()),
       onCopyMd: () => this.copy(toMarkdown(this.history.all()), '已复制 Markdown'),
       onCopyCss: () => this.copy(toCSS(this.history.all()), '已复制 CSS'),
+      onSync: () => this.syncToMcp(),
       onReset: () => this.history.resetAll(),
       onRevert: (id) => this.history.revert(id),
-    });
+    }, this.opts.enableMcpSync);
     this.propsPanel = new PropsPanel(this.overlay.propsEl, {
       setProps: (entries) => this.panelSetProps(entries),
       setSize: (w, h) => this.panelSetSize(w, h),
@@ -731,6 +738,30 @@ export class Sidetation {
       );
     } else {
       fallback();
+    }
+  }
+
+  /** POST the current edits to the local MCP bridge so an AI agent can read them */
+  async syncToMcp(): Promise<void> {
+    const payload = toSyncPayload(this.history.all());
+    if (payload.count === 0) {
+      this.overlay.toast('没有可同步的修改');
+      return;
+    }
+    const url = `${this.opts.mcpEndpoint.replace(/\/$/, '')}/ingest`;
+    this.toolbar.setSyncState('syncing');
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      this.toolbar.setSyncState('idle');
+      this.overlay.toast(`已同步 ${payload.count} 处修改到 MCP`);
+    } catch (err) {
+      this.toolbar.setSyncState('idle');
+      this.overlay.toast(`同步失败：本地 MCP 服务未启动？(${String(err)})`);
     }
   }
 
