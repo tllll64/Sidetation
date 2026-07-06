@@ -61,4 +61,9 @@ export interface SidetationOptions {
   autoStart?: boolean;
   /** snap distance in px for alignment guides (default 6) */
   snapThreshold?: number;
+  /** show the "同步 MCP" toolbar button (default false — keeps it hidden for
+   *  users who haven't set up the local MCP bridge) */
+  enableMcpSync?: boolean;
+  /** base URL of the local MCP bridge for "sync to MCP" (default http://127.0.0.1:8787) */
+  mcpEndpoint?: string;
 }

@@ -34,7 +34,7 @@ if (import.meta.env.DEV) {
 
 ## 功能
 
-- **悬浮工具栏**：开始/完成编辑、修改列表、重置、复制 Markdown / CSS
+- **悬浮工具栏**：默认折叠成品牌 pill，点击展开为完整工具栏（开始/完成编辑、修改列表、重置、复制 Markdown / CSS，以及可选的同步 MCP）
 - **点选元素**：hover 高亮，点击选中；点击子元素下钻，`Alt+点击` 上钻到父级
 - **多选批量操作**：`Shift+点击` 加入/移出多选；拖拽任意已选元素整体移动，`Delete` 批量删除，均记录为一次撤销；选中 ≥2 个元素时出现对齐面板（左/水平居中/右/上/垂直居中/下），≥3 个元素可横向/纵向等距分布
 - **拖拽移动**：`transform: translate` 位移，不破坏文档流；自动吸附兄弟/父元素的边缘与中线（Figma 式参考线）
@@ -52,6 +52,8 @@ if (import.meta.env.DEV) {
 **Markdown（给 AI agent）**——包含稳定选择器（过滤 CSS-in-JS 哈希类名）、位移量、before/after 盒模型，并提示 agent 用合理的布局属性落实而非照抄 transform。
 
 **CSS**——可直接粘贴的覆盖样式（transform / width / height）。
+
+**同步 MCP（直连 AI agent，可选）**——默认隐藏；用 `init({ enableMcpSync: true })` 开启后，工具栏会出现「同步 MCP」按钮，把修改推送到本地 MCP 桥，任意支持 MCP 的 agent（Claude Code / Cursor / Codex / CodeBuddy / WorkBuddy…）即可直接读取，省去复制粘贴。stdio 与 Streamable HTTP 两种传输都支持，多个 agent 可同时读同一份修改。配置见 [`mcp/README.md`](mcp/README.md)。
 
 ## 技术要点
 

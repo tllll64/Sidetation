@@ -1,4 +1,4 @@
-const G = `
+const K = `
 :host {
   all: initial;
 }
@@ -151,6 +151,23 @@ const G = `
   width: 14px;
   height: 14px;
 }
+
+/* ---- collapsed (inactive) toolbar: only the brand shows, click to start ---- */
+.toolbar { transition: gap 0.16s ease, padding 0.16s ease; }
+.toolbar.collapsed { gap: 0; padding: 5px 6px; }
+.toolbar.collapsed > *:not(.brand) { display: none !important; }
+.toolbar.collapsed .brand {
+  cursor: pointer;
+  padding: 5px 12px 5px 10px;
+  border-radius: 999px;
+  outline: none;
+  transition: background 0.15s ease;
+}
+.toolbar.collapsed .brand:hover { background: rgba(255, 255, 255, 0.09); }
+.toolbar.collapsed .brand:active { background: rgba(255, 255, 255, 0.14); }
+.toolbar.collapsed .brand:focus-visible { box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.6); }
+.toolbar.collapsed .brand-dot { transition: transform 0.15s ease; }
+.toolbar.collapsed .brand:hover .brand-dot { transform: rotate(45deg) scale(1.15); }
 
 /* ---- shortcuts cheat-sheet (hover popover) ---- */
 .shortcuts {
@@ -503,8 +520,8 @@ const G = `
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-`, K = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
-class _ {
+`, _ = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+class q {
   constructor() {
     this.host = document.createElement("div"), this.multiBoxes = [], this.onHandleDown = null, this.toastTimer = 0, this.host.setAttribute("data-sidetation", ""), Object.assign(this.host.style, {
       position: "fixed",
@@ -515,18 +532,18 @@ class _ {
     const t = this.host.attachShadow({ mode: "open" });
     this.shadow = t;
     const e = document.createElement("style");
-    e.textContent = G, t.append(e);
+    e.textContent = K, t.append(e);
     const s = (n) => {
-      const o = document.createElement("div");
-      return o.className = n, t.append(o), o;
+      const i = document.createElement("div");
+      return i.className = n, t.append(i), i;
     };
     this.hoverBox = s("hover-box"), this.selBox = s("sel-box"), this.selLabel = document.createElement("div"), this.selLabel.className = "sel-label", this.selBox.append(this.selLabel);
-    for (const n of K) {
-      const o = document.createElement("div");
-      o.className = "handle", o.dataset.dir = n, o.addEventListener("pointerdown", (r) => {
-        var a;
-        return (a = this.onHandleDown) == null ? void 0 : a.call(this, n, r);
-      }), this.selBox.append(o);
+    for (const n of _) {
+      const i = document.createElement("div");
+      i.className = "handle", i.dataset.dir = n, i.addEventListener("pointerdown", (r) => {
+        var l;
+        return (l = this.onHandleDown) == null ? void 0 : l.call(this, n, r);
+      }), this.selBox.append(i);
     }
     this.guideV = s("guide guide-v"), this.guideH = s("guide guide-h"), this.panelEl = s("panel"), this.propsEl = s("props"), this.alignEl = s("align-panel"), this.shortcutsEl = s("shortcuts"), this.toolbarEl = s("toolbar"), this.toastEl = s("toast"), document.documentElement.appendChild(this.host);
   }
@@ -554,7 +571,7 @@ class _ {
   /** float the align/distribute panel above the selection's bounding box */
   positionAlignPanel(t) {
     if (t.length === 0) return;
-    const e = Math.min(...t.map((o) => o.left)), s = Math.max(...t.map((o) => o.right)), n = Math.min(...t.map((o) => o.top));
+    const e = Math.min(...t.map((i) => i.left)), s = Math.max(...t.map((i) => i.right)), n = Math.min(...t.map((i) => i.top));
     this.alignEl.style.left = `${(e + s) / 2}px`, this.alignEl.style.top = `${Math.max(0, n)}px`;
   }
   setGuides(t, e) {
@@ -567,96 +584,96 @@ class _ {
     clearTimeout(this.toastTimer), this.host.remove();
   }
 }
-const q = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, Z = ["data-testid", "data-test", "data-cy"];
-function F(i) {
-  return Array.from(i.classList).filter((t) => t.length <= 24 && !q.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
+const Z = /(^|[-_])[0-9a-f]{5,}([-_]|$)|^(css|sc|jss|emotion)-|__[A-Za-z0-9]{5,}$/i, J = ["data-testid", "data-test", "data-cy"];
+function F(o) {
+  return Array.from(o.classList).filter((t) => t.length <= 24 && !Z.test(t) && !/\d{3,}/.test(t)).slice(0, 2);
 }
-function R(i) {
-  return !i.id || /\d{3,}/.test(i.id) || /^[0-9a-f-]{8,}$/i.test(i.id) ? null : i.id;
+function A(o) {
+  return !o.id || /\d{3,}/.test(o.id) || /^[0-9a-f-]{8,}$/i.test(o.id) ? null : o.id;
 }
-function X(i) {
-  const t = i.tagName.toLowerCase();
-  for (const s of Z) {
-    const n = i.getAttribute(s);
+function W(o) {
+  const t = o.tagName.toLowerCase();
+  for (const s of J) {
+    const n = o.getAttribute(s);
     if (n) return `${t}[${s}="${n}"]`;
   }
-  const e = F(i).map((s) => `.${CSS.escape(s)}`).join("");
+  const e = F(o).map((s) => `.${CSS.escape(s)}`).join("");
   return t + e;
 }
-function L(i, t) {
+function B(o, t) {
   try {
-    const e = document.querySelectorAll(i);
+    const e = document.querySelectorAll(o);
     return e.length === 1 && e[0] === t;
   } catch {
     return !1;
   }
 }
-function W(i) {
-  const t = X(i), e = i.parentElement;
+function X(o) {
+  const t = W(o), e = o.parentElement;
   if (!e) return t;
-  const s = Array.from(e.children).filter((n) => n.tagName === i.tagName);
-  return s.length <= 1 ? t : `${t}:nth-of-type(${s.indexOf(i) + 1})`;
+  const s = Array.from(e.children).filter((n) => n.tagName === o.tagName);
+  return s.length <= 1 ? t : `${t}:nth-of-type(${s.indexOf(o) + 1})`;
 }
-function M(i, t) {
+function I(o, t) {
   const e = [];
-  let s = i;
+  let s = o;
   for (; s && s !== document.body && s !== document.documentElement && e.length < 5; ) {
-    const n = R(s);
-    if (n && s !== i) {
+    const n = A(s);
+    if (n && s !== o) {
       e.unshift(`#${CSS.escape(n)}`);
       const r = e.join(" > ");
-      if (L(r, i)) return r;
+      if (B(r, o)) return r;
       break;
     }
-    e.unshift(t ? W(s) : X(s));
-    const o = e.join(" > ");
-    if (L(o, i)) return o;
+    e.unshift(t ? X(s) : W(s));
+    const i = e.join(" > ");
+    if (B(i, o)) return i;
     s = s.parentElement;
   }
   return null;
 }
-function J(i) {
-  const t = R(i);
+function Q(o) {
+  const t = A(o);
   if (t) {
     const r = `#${CSS.escape(t)}`;
-    if (L(r, i)) return r;
+    if (B(r, o)) return r;
   }
-  const e = M(i, !1);
+  const e = I(o, !1);
   if (e) return e;
-  const s = M(i, !0);
+  const s = I(o, !0);
   if (s) return s;
   const n = [];
-  let o = i;
-  for (; o && o !== document.body && o !== document.documentElement && n.length < 5; )
-    n.unshift(W(o)), o = o.parentElement;
+  let i = o;
+  for (; i && i !== document.body && i !== document.documentElement && n.length < 5; )
+    n.unshift(X(i)), i = i.parentElement;
   return n.join(" > ");
 }
-function Q(i) {
-  const t = i.tagName.toLowerCase(), e = R(i);
+function tt(o) {
+  const t = o.tagName.toLowerCase(), e = A(o);
   if (e) return `${t}#${e}`;
-  const s = F(i);
+  const s = F(o);
   return s.length ? `${t}.${s[0]}` : t;
 }
-function z(i, t, e) {
-  e ? i.style.setProperty(t, e) : i.style.removeProperty(t);
+function z(o, t, e) {
+  e ? o.style.setProperty(t, e) : o.style.removeProperty(t);
 }
-function y(i) {
-  const { el: t, savedInline: e } = i;
-  if (i.deleted ? t.style.display = "none" : i.resized && i.baseDisplay === "inline" ? t.style.display = "inline-block" : z(t, "display", e.display), i.moved && (i.dx !== 0 || i.dy !== 0)) {
-    const n = `translate(${i.dx}px, ${i.dy}px)`;
-    t.style.transform = i.baseTransform === "none" ? n : `${n} ${i.baseTransform}`;
+function y(o) {
+  const { el: t, savedInline: e } = o;
+  if (o.deleted ? t.style.display = "none" : o.resized && o.baseDisplay === "inline" ? t.style.display = "inline-block" : z(t, "display", e.display), o.moved && (o.dx !== 0 || o.dy !== 0)) {
+    const n = `translate(${o.dx}px, ${o.dy}px)`;
+    t.style.transform = o.baseTransform === "none" ? n : `${n} ${o.baseTransform}`;
   } else
     z(t, "transform", e.transform);
-  i.resized ? (t.style.width = `${i.size.w - i.sizeAdj.w}px`, t.style.height = `${i.size.h - i.sizeAdj.h}px`) : (z(t, "width", e.width), z(t, "height", e.height));
-  const s = /* @__PURE__ */ new Set([...Object.keys(i.savedProps), ...Object.keys(i.props)]);
+  o.resized ? (t.style.width = `${o.size.w - o.sizeAdj.w}px`, t.style.height = `${o.size.h - o.sizeAdj.h}px`) : (z(t, "width", e.width), z(t, "height", e.height));
+  const s = /* @__PURE__ */ new Set([...Object.keys(o.savedProps), ...Object.keys(o.props)]);
   for (const n of s)
-    n in i.props ? t.style.setProperty(n, i.props[n]) : z(t, n, i.savedProps[n] ?? "");
-  if (i.savedText !== null && !t.hasAttribute("contenteditable")) {
-    const n = i.text ?? i.savedText;
+    n in o.props ? t.style.setProperty(n, o.props[n]) : z(t, n, o.savedProps[n] ?? "");
+  if (o.savedText !== null && !t.hasAttribute("contenteditable")) {
+    const n = o.text ?? o.savedText;
     t.textContent !== n && (t.textContent = n);
   }
 }
-const tt = [
+const et = [
   "display",
   "position",
   "flex-direction",
@@ -699,50 +716,50 @@ const tt = [
   "box-shadow",
   "transform",
   "object-fit"
-], et = 120;
-function Y(i, t, e) {
-  if (e.n++ > et) {
+], st = 120;
+function Y(o, t, e) {
+  if (e.n++ > st) {
     t.replaceChildren();
     return;
   }
-  const s = getComputedStyle(i);
+  const s = getComputedStyle(o);
   let n = "";
-  for (const a of tt) n += `${a}:${s.getPropertyValue(a)};`;
+  for (const l of et) n += `${l}:${s.getPropertyValue(l)};`;
   t.setAttribute("style", n);
-  const o = Array.from(i.children), r = Array.from(t.children);
-  for (let a = 0; a < r.length; a++) {
-    const l = r[a].tagName.toLowerCase();
-    if (l === "script" || l === "iframe" || l === "video" || l === "canvas") {
-      r[a].remove();
+  const i = Array.from(o.children), r = Array.from(t.children);
+  for (let l = 0; l < r.length; l++) {
+    const a = r[l].tagName.toLowerCase();
+    if (a === "script" || a === "iframe" || a === "video" || a === "canvas") {
+      r[l].remove();
       continue;
     }
-    Y(o[a], r[a], e);
+    Y(i[l], r[l], e);
   }
 }
-function U(i) {
-  const t = i.getBoundingClientRect();
+function U(o) {
+  const t = o.getBoundingClientRect();
   if (t.width < 1 || t.height < 1) return null;
   try {
-    const e = i.cloneNode(!0);
-    Y(i, e, { n: 0 }), e.style.margin = "0", e.style.transform = "none", e.style.maxWidth = "none", e.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-    const s = new XMLSerializer().serializeToString(e), n = Math.ceil(t.width), o = Math.ceil(t.height), r = `<svg xmlns="http://www.w3.org/2000/svg" width="${n}" height="${o}"><foreignObject width="100%" height="100%">${s}</foreignObject></svg>`;
+    const e = o.cloneNode(!0);
+    Y(o, e, { n: 0 }), e.style.margin = "0", e.style.transform = "none", e.style.maxWidth = "none", e.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+    const s = new XMLSerializer().serializeToString(e), n = Math.ceil(t.width), i = Math.ceil(t.height), r = `<svg xmlns="http://www.w3.org/2000/svg" width="${n}" height="${i}"><foreignObject width="100%" height="100%">${s}</foreignObject></svg>`;
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(r)}`;
   } catch {
     return null;
   }
 }
-const st = 800;
-function D(i) {
-  return !i.moved && !i.resized && !i.deleted && Object.keys(i.props).length === 0 && i.text === null;
+const nt = 800;
+function N(o) {
+  return !o.moved && !o.resized && !o.deleted && Object.keys(o.props).length === 0 && o.text === null;
 }
-function nt(i, t) {
-  const e = Object.keys(i);
-  return e.length === Object.keys(t).length && e.every((s) => i[s] === t[s]);
+function ot(o, t) {
+  const e = Object.keys(o);
+  return e.length === Object.keys(t).length && e.every((s) => o[s] === t[s]);
 }
-function ot(i, t) {
-  return i.dx === t.dx && i.dy === t.dy && i.size.w === t.size.w && i.size.h === t.size.h && i.moved === t.moved && i.resized === t.resized && i.deleted === t.deleted && i.text === t.text && nt(i.props, t.props);
+function it(o, t) {
+  return o.dx === t.dx && o.dy === t.dy && o.size.w === t.size.w && o.size.h === t.size.h && o.moved === t.moved && o.resized === t.resized && o.deleted === t.deleted && o.text === t.text && ot(o.props, t.props);
 }
-const it = {
+const rt = {
   dx: 0,
   dy: 0,
   moved: !1,
@@ -750,18 +767,18 @@ const it = {
   deleted: !1,
   text: null
 };
-class rt {
+class at {
   constructor() {
     this.records = /* @__PURE__ */ new Map(), this.undoStack = [], this.redoStack = [], this.seq = 1, this.onChange = null;
   }
   ensure(t) {
     let e = this.records.get(t);
     if (e) return e;
-    const s = t.getBoundingClientRect(), n = getComputedStyle(t), o = n.boxSizing === "content-box", r = (a) => parseFloat(a) || 0;
+    const s = t.getBoundingClientRect(), n = getComputedStyle(t), i = n.boxSizing === "content-box", r = (l) => parseFloat(l) || 0;
     return e = {
       id: this.seq++,
       el: t,
-      selector: J(t),
+      selector: Q(t),
       tag: t.tagName.toLowerCase(),
       originalRect: {
         x: s.left + window.scrollX,
@@ -777,7 +794,7 @@ class rt {
       },
       baseTransform: n.transform,
       baseDisplay: n.display,
-      sizeAdj: o ? {
+      sizeAdj: i ? {
         w: r(n.paddingLeft) + r(n.paddingRight) + r(n.borderLeftWidth) + r(n.borderRightWidth),
         h: r(n.paddingTop) + r(n.paddingBottom) + r(n.borderTopWidth) + r(n.borderBottomWidth)
       } : { w: 0, h: 0 },
@@ -821,17 +838,17 @@ class rt {
   /** finish a (possibly multi-select) gesture as ONE undo step */
   commitBatch(t, e) {
     const s = [];
-    for (const { rec: a, before: l } of t) {
-      a.dx === 0 && a.dy === 0 && (a.moved = !1), y(a);
-      const h = this.snapshot(a);
-      ot(l, h) || s.push({ rec: a, before: l, after: h }), this.cleanup(a);
+    for (const { rec: l, before: a } of t) {
+      l.dx === 0 && l.dy === 0 && (l.moved = !1), y(l);
+      const h = this.snapshot(l);
+      it(a, h) || s.push({ rec: l, before: a, after: h }), this.cleanup(l);
     }
     if (s.length === 0) {
       this.emit();
       return;
     }
-    const n = (e == null ? void 0 : e.coalesce) ?? null, o = this.undoStack[this.undoStack.length - 1];
-    n !== null && o !== void 0 && o.coalesce === n && Date.now() - o.at < st && o.entries.length === s.length && o.entries.every((a, l) => a.rec === s[l].rec) ? (s.forEach((a, l) => o.entries[l].after = a.after), o.at = Date.now()) : this.undoStack.push({ entries: s, coalesce: n, at: Date.now() }), this.redoStack.length = 0, this.emit();
+    const n = (e == null ? void 0 : e.coalesce) ?? null, i = this.undoStack[this.undoStack.length - 1];
+    n !== null && i !== void 0 && i.coalesce === n && Date.now() - i.at < nt && i.entries.length === s.length && i.entries.every((l, a) => l.rec === s[a].rec) ? (s.forEach((l, a) => i.entries[a].after = l.after), i.at = Date.now()) : this.undoStack.push({ entries: s, coalesce: n, at: Date.now() }), this.redoStack.length = 0, this.emit();
   }
   undo() {
     const t = this.undoStack.pop();
@@ -850,7 +867,7 @@ class rt {
     const e = this.all().find((n) => n.id === t);
     if (!e) return;
     const s = this.snapshot(e);
-    this.applySnap(e, { ...it, size: { ...e.startSize }, props: {} }), this.undoStack.push({
+    this.applySnap(e, { ...rt, size: { ...e.startSize }, props: {} }), this.undoStack.push({
       entries: [{ rec: e, before: s, after: this.snapshot(e) }],
       coalesce: null,
       at: Date.now()
@@ -864,7 +881,7 @@ class rt {
   }
   /** keep the consolidated map in sync: pristine records drop out, edited ones stay */
   cleanup(t) {
-    D(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
+    N(t) ? this.records.delete(t.el) : this.records.set(t.el, t);
   }
   /**
    * Re-apply a previously saved session after a page refresh: re-resolve each
@@ -885,22 +902,22 @@ class rt {
         e++;
         continue;
       }
-      const o = this.ensure(n[0]);
-      o.dx = s.dx, o.dy = s.dy, o.moved = s.moved, o.resized = s.resized, o.deleted = s.deleted, o.startSize = { ...s.startSize }, o.size = { ...s.size }, o.text = s.text, o.props = { ...s.props }, o.savedProps = { ...s.savedProps }, y(o), this.cleanup(o);
+      const i = this.ensure(n[0]);
+      i.dx = s.dx, i.dy = s.dy, i.moved = s.moved, i.resized = s.resized, i.deleted = s.deleted, i.startSize = { ...s.startSize }, i.size = { ...s.size }, i.text = s.text, i.props = { ...s.props }, i.savedProps = { ...s.savedProps }, y(i), this.cleanup(i);
     }
     return e;
   }
   /** drop records that were ensure()d but never turned into a real edit */
   prune() {
     for (const [t, e] of this.records)
-      D(e) && this.records.delete(t);
+      N(e) && this.records.delete(t);
   }
   emit() {
     var t;
     (t = this.onChange) == null || t.call(this);
   }
 }
-const w = Math.round, at = [
+const w = Math.round, lt = [
   ["点击", "选中元素，点子元素可下钻"],
   ["⇧ 点击", "多选 / 取消多选元素"],
   ["双击", "编辑文字内容（纯文本元素）"],
@@ -914,57 +931,67 @@ const w = Math.round, at = [
   ["Tab / ⇧Tab", "下一个 / 上一个兄弟元素"],
   ["Esc", "取消选中，再按退出编辑"]
 ];
-class lt {
-  constructor(t, e, s, n) {
-    this.panel = e, this.shortcuts = s, this.cb = n, this.panelOpen = !1, this.records = [];
-    const o = document.createElement("div");
-    o.className = "brand";
-    const r = document.createElement("span");
-    r.className = "brand-dot", o.append(r, "Sidetation"), t.append(o);
-    const a = (p, f) => {
-      const m = document.createElement("button");
-      return m.textContent = p, m.addEventListener("click", f), t.append(m), m;
-    }, l = () => {
-      const p = document.createElement("div");
-      p.className = "divider", t.append(p);
+class dt {
+  constructor(t, e, s, n, i = !1) {
+    this.bar = t, this.panel = e, this.shortcuts = s, this.cb = n, this.panelOpen = !1, this.active = !1, this.records = [];
+    const r = document.createElement("div");
+    r.className = "brand", r.setAttribute("role", "button");
+    const l = document.createElement("span");
+    l.className = "brand-dot", r.append(l, "Sidetation"), t.append(r), this.brandEl = r, r.addEventListener("click", () => {
+      this.active || this.cb.onToggle();
+    }), r.addEventListener("keydown", (g) => {
+      !this.active && (g.key === "Enter" || g.key === " ") && (g.preventDefault(), this.cb.onToggle());
+    });
+    const a = (g, m) => {
+      const b = document.createElement("button");
+      return b.textContent = g, b.addEventListener("click", m), t.append(b), b;
+    }, h = () => {
+      const g = document.createElement("div");
+      g.className = "divider", t.append(g);
     };
     this.toggleBtn = a("开始编辑", () => n.onToggle()), this.toggleBtn.classList.add("primary"), this.kbdBtn = a("", () => {
     }), this.kbdBtn.classList.add("kbd-btn"), this.kbdBtn.title = "快捷键";
-    const h = "http://www.w3.org/2000/svg", d = document.createElementNS(h, "svg");
+    const c = "http://www.w3.org/2000/svg", d = document.createElementNS(c, "svg");
     d.setAttribute("viewBox", "0 0 24 24"), d.setAttribute("fill", "none"), d.setAttribute("stroke", "currentColor"), d.setAttribute("stroke-width", "2"), d.setAttribute("stroke-linecap", "round"), d.setAttribute("stroke-linejoin", "round");
-    const c = document.createElementNS(h, "path");
-    c.setAttribute("d", "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"), d.append(c), this.kbdBtn.append(d), this.buildShortcuts(), this.kbdBtn.addEventListener("mouseenter", () => this.showShortcuts()), this.kbdBtn.addEventListener("mouseleave", () => this.shortcuts.classList.remove("open")), l(), this.editsBtn = a("修改 0", () => this.togglePanel()), this.resetBtn = a("重置", () => n.onReset()), l(), this.mdBtn = a("复制 Markdown", () => n.onCopyMd()), this.cssBtn = a("复制 CSS", () => n.onCopyCss());
+    const u = document.createElementNS(c, "path");
+    u.setAttribute("d", "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"), d.append(u), this.kbdBtn.append(d), this.buildShortcuts(), this.kbdBtn.addEventListener("mouseenter", () => this.showShortcuts()), this.kbdBtn.addEventListener("mouseleave", () => this.shortcuts.classList.remove("open")), h(), this.editsBtn = a("修改 0", () => this.togglePanel()), this.resetBtn = a("重置", () => n.onReset()), h(), this.mdBtn = a("复制 Markdown", () => n.onCopyMd()), this.cssBtn = a("复制 CSS", () => n.onCopyCss()), i && (this.syncBtn = a("同步 MCP", () => n.onSync()), this.syncBtn.title = "把当前修改推送到本地 MCP 服务，供 AI 编码助手读取");
+  }
+  /** reflect the in-flight sync request on the button */
+  setSyncState(t) {
+    if (!this.syncBtn) return;
+    const e = t === "syncing";
+    this.syncBtn.textContent = e ? "同步中…" : "同步 MCP", this.syncBtn.disabled = e || this.records.length === 0;
   }
   buildShortcuts() {
     const t = document.createElement("div");
     t.className = "shortcuts-title", t.textContent = "快捷键", this.shortcuts.append(t);
-    for (const [e, s] of at) {
+    for (const [e, s] of lt) {
       const n = document.createElement("div");
       n.className = "shortcut-row";
-      const o = document.createElement("span");
-      o.className = "kbd", o.textContent = e;
+      const i = document.createElement("span");
+      i.className = "kbd", i.textContent = e;
       const r = document.createElement("span");
-      r.className = "shortcut-desc", r.textContent = s, n.append(o, r), this.shortcuts.append(n);
+      r.className = "shortcut-desc", r.textContent = s, n.append(i, r), this.shortcuts.append(n);
     }
   }
   /** before -> after square thumbnails so the user can see what changed */
   buildThumbs(t) {
     const e = document.createElement("div");
     e.className = "edit-thumbs";
-    const s = (r, a = !1) => {
-      const l = document.createElement("div");
-      if (l.className = "thumb", a)
-        l.classList.add("deleted"), l.textContent = "✕";
+    const s = (r, l = !1) => {
+      const a = document.createElement("div");
+      if (a.className = "thumb", l)
+        a.classList.add("deleted"), a.textContent = "✕";
       else if (r) {
         const h = document.createElement("img");
-        h.src = r, h.alt = "", l.append(h);
+        h.src = r, h.alt = "", a.append(h);
       } else
-        l.textContent = "?", l.classList.add("empty");
-      return l;
+        a.textContent = "?", a.classList.add("empty");
+      return a;
     }, n = document.createElement("span");
     n.className = "thumb-arrow", n.textContent = "→";
-    const o = t.deleted || !t.el.isConnected ? s(null, !0) : s(U(t.el));
-    return e.append(s(t.beforeSnap), n, o), e;
+    const i = t.deleted || !t.el.isConnected ? s(null, !0) : s(U(t.el));
+    return e.append(s(t.beforeSnap), n, i), e;
   }
   showShortcuts() {
     const t = this.kbdBtn.getBoundingClientRect();
@@ -974,9 +1001,9 @@ class lt {
     this.panelOpen = !this.panelOpen, this.panel.classList.toggle("open", this.panelOpen), this.panelOpen && this.renderPanel();
   }
   update(t, e) {
-    this.records = e, this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.kbdBtn.style.display = t ? "" : "none", t || this.shortcuts.classList.remove("open"), this.editsBtn.textContent = `修改 ${e.length}`;
+    this.records = e, this.active = t, this.bar.classList.toggle("collapsed", !t), this.brandEl.setAttribute("tabindex", t ? "-1" : "0"), this.brandEl.title = t ? "" : "开始编辑", this.toggleBtn.textContent = t ? "完成" : "开始编辑", this.toggleBtn.classList.toggle("active", t), this.kbdBtn.style.display = t ? "" : "none", t || this.shortcuts.classList.remove("open"), this.editsBtn.textContent = `修改 ${e.length}`;
     const s = e.length === 0;
-    this.editsBtn.disabled = s, this.resetBtn.disabled = s, this.mdBtn.disabled = s, this.cssBtn.disabled = s, s && this.panelOpen ? this.togglePanel() : this.panelOpen && this.renderPanel();
+    this.editsBtn.disabled = s, this.resetBtn.disabled = s, this.mdBtn.disabled = s, this.cssBtn.disabled = s, this.syncBtn && (this.syncBtn.disabled = s), s && this.panelOpen ? this.togglePanel() : this.panelOpen && this.renderPanel();
   }
   renderPanel() {
     if (this.panel.replaceChildren(), this.records.length === 0) {
@@ -993,33 +1020,33 @@ class lt {
       );
       const n = Object.keys(t.props).length;
       n && s.push(`样式 ×${n}`), t.text !== null && s.push("文字");
-      const o = document.createElement("div");
-      o.className = "edit-info";
+      const i = document.createElement("div");
+      i.className = "edit-info";
       const r = document.createElement("div");
       r.className = "edit-sel", r.textContent = t.selector;
-      const a = document.createElement("div");
-      a.className = "edit-delta", a.textContent = s.join(" · "), o.append(r, a), e.append(o);
-      const l = document.createElement("button");
-      l.textContent = "撤销", l.addEventListener("click", () => this.cb.onRevert(t.id)), e.append(l), this.panel.append(e);
+      const l = document.createElement("div");
+      l.className = "edit-delta", l.textContent = s.join(" · "), i.append(r, l), e.append(i);
+      const a = document.createElement("button");
+      a.textContent = "撤销", a.addEventListener("click", () => this.cb.onRevert(t.id)), e.append(a), this.panel.append(e);
     }
   }
 }
-const C = ["flex-start", "center", "flex-end"], P = (i) => Math.round(parseFloat(i) || 0), B = (i) => Math.round(i).toString(16).padStart(2, "0");
-function I(i) {
-  const t = i.match(/rgba?\(([^)]+)\)/);
-  if (!t) return { hex: "#000000", alpha: i && i !== "transparent" ? 1 : 0 };
+const C = ["flex-start", "center", "flex-end"], P = (o) => Math.round(parseFloat(o) || 0), T = (o) => Math.round(o).toString(16).padStart(2, "0");
+function j(o) {
+  const t = o.match(/rgba?\(([^)]+)\)/);
+  if (!t) return { hex: "#000000", alpha: o && o !== "transparent" ? 1 : 0 };
   const e = t[1].split(",").map((s) => parseFloat(s));
-  return { hex: `#${B(e[0])}${B(e[1])}${B(e[2])}`, alpha: e[3] ?? 1 };
+  return { hex: `#${T(e[0])}${T(e[1])}${T(e[2])}`, alpha: e[3] ?? 1 };
 }
-function dt(i, t) {
-  if (t >= 1) return i;
-  const e = parseInt(i.slice(1, 3), 16), s = parseInt(i.slice(3, 5), 16), n = parseInt(i.slice(5, 7), 16);
+function ht(o, t) {
+  if (t >= 1) return o;
+  const e = parseInt(o.slice(1, 3), 16), s = parseInt(o.slice(3, 5), 16), n = parseInt(o.slice(5, 7), 16);
   return `rgba(${e}, ${s}, ${n}, ${+t.toFixed(3)})`;
 }
-function N(i) {
-  return i.includes("center") ? 1 : i.includes("end") ? 2 : 0;
+function O(o) {
+  return o.includes("center") ? 1 : o.includes("end") ? 2 : 0;
 }
-class ht {
+class ct {
   constructor(t, e) {
     this.root = t, this.host = e, this.el = null, this.flow = "none", this.flowBtns = [], this.alignBtns = [], this.padSides = [], this.padIndependent = !1, this.layoutOnly = [], this.build();
   }
@@ -1041,12 +1068,12 @@ class ht {
   num(t, e, s = 0) {
     const n = document.createElement("input");
     n.type = "number", n.min = String(s);
-    const o = () => {
+    const i = () => {
       const r = parseFloat(n.value);
       Number.isNaN(r) || e(r);
     };
-    return n.addEventListener("change", o), n.addEventListener("keydown", (r) => {
-      r.key === "Enter" && (o(), n.blur());
+    return n.addEventListener("change", i), n.addEventListener("keydown", (r) => {
+      r.key === "Enter" && (i(), n.blur());
     }), t.append(n), n;
   }
   color(t, e) {
@@ -1062,49 +1089,49 @@ class ht {
       ["row", "→", "横向排列 (row)"],
       ["wrap", "⤸", "横向换行 (wrap)"]
     ];
-    for (const [g, b, E] of n) {
-      const S = document.createElement("button");
-      S.textContent = b, S.title = E, S.addEventListener("click", () => this.applyFlow(g)), s.append(S), this.flowBtns.push(S);
+    for (const [f, x, k] of n) {
+      const E = document.createElement("button");
+      E.textContent = x, E.title = k, E.addEventListener("click", () => this.applyFlow(f)), s.append(E), this.flowBtns.push(E);
     }
     e.append(s);
-    const o = this.row(t, "W / H");
-    this.wInput = this.num(o, (g) => this.host.setSize(g, null), 8), this.hInput = this.num(o, (g) => this.host.setSize(null, g), 8);
-    const r = this.row(t, "Align"), a = document.createElement("div");
-    a.className = "align-grid";
-    for (let g = 0; g < 3; g++)
-      for (let b = 0; b < 3; b++) {
-        const E = document.createElement("button");
-        E.addEventListener("click", () => this.applyAlign(g, b)), a.append(E), this.alignBtns.push(E);
+    const i = this.row(t, "W / H");
+    this.wInput = this.num(i, (f) => this.host.setSize(f, null), 8), this.hInput = this.num(i, (f) => this.host.setSize(null, f), 8);
+    const r = this.row(t, "Align"), l = document.createElement("div");
+    l.className = "align-grid";
+    for (let f = 0; f < 3; f++)
+      for (let x = 0; x < 3; x++) {
+        const k = document.createElement("button");
+        k.addEventListener("click", () => this.applyAlign(f, x)), l.append(k), this.alignBtns.push(k);
       }
-    r.append(a);
-    const l = document.createElement("div");
-    l.style.flex = "1";
+    r.append(l);
+    const a = document.createElement("div");
+    a.style.flex = "1";
     const h = document.createElement("div");
-    h.className = "props-label", h.textContent = "Gap", l.append(h), this.gapInput = this.num(l, (g) => this.host.setProps({ gap: `${g}px` })), r.append(l), this.layoutOnly.push(a, l), this.padLinkedRow = this.row(t, "Padding"), this.padXInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padYInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padXInput.title = "水平 padding", this.padYInput.title = "垂直 padding", this.padToggle = document.createElement("button"), this.padToggle.className = "pad-toggle", this.padToggle.textContent = "⊞", this.padToggle.title = "四边独立 padding", this.padToggle.addEventListener("click", () => this.togglePadMode()), this.padLinkedRow.append(this.padToggle), this.padGridRow = this.row(t, ""), this.padGridRow.style.display = "none";
-    const d = document.createElement("div");
-    d.className = "pad-grid";
-    const c = ["左 padding", "上 padding", "右 padding", "下 padding"];
-    for (let g = 0; g < 4; g++) {
-      const b = this.num(d, () => this.applyPadding());
-      b.title = c[g], this.padSides.push(b);
+    h.className = "props-label", h.textContent = "Gap", a.append(h), this.gapInput = this.num(a, (f) => this.host.setProps({ gap: `${f}px` })), r.append(a), this.layoutOnly.push(l, a), this.padLinkedRow = this.row(t, "Padding"), this.padXInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padYInput = this.num(this.padLinkedRow, () => this.applyPadding()), this.padXInput.title = "水平 padding", this.padYInput.title = "垂直 padding", this.padToggle = document.createElement("button"), this.padToggle.className = "pad-toggle", this.padToggle.textContent = "⊞", this.padToggle.title = "四边独立 padding", this.padToggle.addEventListener("click", () => this.togglePadMode()), this.padLinkedRow.append(this.padToggle), this.padGridRow = this.row(t, ""), this.padGridRow.style.display = "none";
+    const c = document.createElement("div");
+    c.className = "pad-grid";
+    const d = ["左 padding", "上 padding", "右 padding", "下 padding"];
+    for (let f = 0; f < 4; f++) {
+      const x = this.num(c, () => this.applyPadding());
+      x.title = d[f], this.padSides.push(x);
     }
-    this.padGridRow.append(d);
-    const p = this.row(t), f = document.createElement("label");
-    f.className = "check", this.clipInput = document.createElement("input"), this.clipInput.type = "checkbox", this.clipInput.addEventListener(
+    this.padGridRow.append(c);
+    const u = this.row(t), g = document.createElement("label");
+    g.className = "check", this.clipInput = document.createElement("input"), this.clipInput.type = "checkbox", this.clipInput.addEventListener(
       "change",
       () => this.host.setProps({ overflow: this.clipInput.checked ? "hidden" : "visible" })
-    ), f.append(this.clipInput, "Clip content"), p.append(f);
-    const m = this.section("Appearance"), x = this.row(m, "Opacity %");
+    ), g.append(this.clipInput, "Clip content"), u.append(g);
+    const m = this.section("Appearance"), b = this.row(m, "Opacity %");
     this.opacityInput = this.num(
-      x,
-      (g) => this.host.setProps({ opacity: String(Math.min(100, Math.max(0, g)) / 100) })
+      b,
+      (f) => this.host.setProps({ opacity: String(Math.min(100, Math.max(0, f)) / 100) })
     );
     const $ = this.row(m, "Radius");
-    this.radiusInput = this.num($, (g) => this.host.setProps({ "border-radius": `${g}px` }));
-    const v = this.section("Fill"), k = this.row(v, "Color");
-    this.fillColor = this.color(k, () => this.applyFill()), this.fillPct = this.num(k, () => this.applyFill()), this.fillPct.title = "不透明度 %";
-    const V = this.section("Stroke"), A = this.row(V, "Color / W");
-    this.strokeColor = this.color(A, () => this.applyStroke()), this.strokeWidth = this.num(A, () => this.applyStroke()), this.strokeWidth.step = "0.5", this.strokeWidth.title = "描边宽度 px";
+    this.radiusInput = this.num($, (f) => this.host.setProps({ "border-radius": `${f}px` }));
+    const v = this.section("Fill"), S = this.row(v, "Color");
+    this.fillColor = this.color(S, () => this.applyFill()), this.fillPct = this.num(S, () => this.applyFill()), this.fillPct.title = "不透明度 %";
+    const G = this.section("Stroke"), D = this.row(G, "Color / W");
+    this.strokeColor = this.color(D, () => this.applyStroke()), this.strokeWidth = this.num(D, () => this.applyStroke()), this.strokeWidth.step = "0.5", this.strokeWidth.title = "描边宽度 px";
   }
   // ---------- writes ----------
   applyFlow(t) {
@@ -1120,7 +1147,7 @@ class ht {
   }
   applyPadding() {
     if (this.padIndependent) {
-      const [t, e, s, n] = this.padSides.map((o) => parseFloat(o.value) || 0);
+      const [t, e, s, n] = this.padSides.map((i) => parseFloat(i.value) || 0);
       this.host.setProps({ padding: `${e}px ${s}px ${n}px ${t}px` });
     } else {
       const t = parseFloat(this.padXInput.value) || 0, e = parseFloat(this.padYInput.value) || 0;
@@ -1134,14 +1161,14 @@ class ht {
     const t = !this.padIndependent;
     if (t) {
       const e = this.padXInput.value || "0", s = this.padYInput.value || "0", n = [e, s, e, s];
-      this.padSides.forEach((o, r) => o.value = n[r]);
+      this.padSides.forEach((i, r) => i.value = n[r]);
     } else
       this.padXInput.value = this.padSides[0].value || "0", this.padYInput.value = this.padSides[1].value || "0", this.applyPadding();
     this.setPadMode(t);
   }
   applyFill() {
     const t = Math.min(100, Math.max(0, parseFloat(this.fillPct.value) || 0));
-    this.host.setProps({ "background-color": dt(this.fillColor.value, t / 100) });
+    this.host.setProps({ "background-color": ht(this.fillColor.value, t / 100) });
   }
   applyStroke() {
     const t = Math.max(0, parseFloat(this.strokeWidth.value) || 0);
@@ -1167,13 +1194,13 @@ class ht {
   populate(t) {
     const e = getComputedStyle(t), s = t.getBoundingClientRect();
     e.display.includes("flex") ? this.flow = e.flexDirection.startsWith("column") ? "col" : e.flexWrap === "wrap" ? "wrap" : "row" : this.flow = "none", this.markFlow(), this.wInput.value = String(Math.round(s.width)), this.hInput.value = String(Math.round(s.height));
-    const n = N(e.justifyContent), o = N(e.alignItems);
-    this.markAlign(this.flow === "col" ? n : o, this.flow === "col" ? o : n), this.gapInput.value = String(e.columnGap === "normal" ? 0 : P(e.columnGap));
-    const r = [e.paddingLeft, e.paddingTop, e.paddingRight, e.paddingBottom].map(P), a = r[0] === r[2] && r[1] === r[3];
-    this.setPadMode(!a), this.padXInput.value = String(r[0]), this.padYInput.value = String(r[1]), this.padSides.forEach((d, c) => d.value = String(r[c])), this.clipInput.checked = e.overflowX !== "visible", this.opacityInput.value = String(Math.round(parseFloat(e.opacity) * 100)), this.radiusInput.value = String(P(e.borderTopLeftRadius));
-    const l = I(e.backgroundColor);
-    this.fillColor.value = l.hex, this.fillPct.value = String(Math.round(l.alpha * 100));
-    const h = I(e.borderTopColor);
+    const n = O(e.justifyContent), i = O(e.alignItems);
+    this.markAlign(this.flow === "col" ? n : i, this.flow === "col" ? i : n), this.gapInput.value = String(e.columnGap === "normal" ? 0 : P(e.columnGap));
+    const r = [e.paddingLeft, e.paddingTop, e.paddingRight, e.paddingBottom].map(P), l = r[0] === r[2] && r[1] === r[3];
+    this.setPadMode(!l), this.padXInput.value = String(r[0]), this.padYInput.value = String(r[1]), this.padSides.forEach((c, d) => c.value = String(r[d])), this.clipInput.checked = e.overflowX !== "visible", this.opacityInput.value = String(Math.round(parseFloat(e.opacity) * 100)), this.radiusInput.value = String(P(e.borderTopLeftRadius));
+    const a = j(e.backgroundColor);
+    this.fillColor.value = a.hex, this.fillPct.value = String(Math.round(a.alpha * 100));
+    const h = j(e.borderTopColor);
     this.strokeColor.value = h.hex, this.strokeWidth.value = String(parseFloat(e.borderTopWidth) || 0);
   }
   // ---------- public ----------
@@ -1189,46 +1216,46 @@ class ht {
     this.focusWithin() || (this.wInput.value = String(Math.round(t.width)), this.hInput.value = String(Math.round(t.height)));
   }
 }
-function ct(i, t, e) {
-  const s = [], n = [], o = (p) => {
-    s.push(p.left, p.right, p.left + p.width / 2), n.push(p.top, p.bottom, p.top + p.height / 2);
-  }, r = i.parentElement;
-  if (r && r !== document.body && o(r.getBoundingClientRect()), r) {
-    let p = 0;
-    for (const f of Array.from(r.children)) {
-      if (f === i || !(f instanceof HTMLElement)) continue;
-      const m = f.getBoundingClientRect();
-      if (!(m.width === 0 && m.height === 0) && (o(m), ++p >= 30))
+function pt(o, t, e) {
+  const s = [], n = [], i = (u) => {
+    s.push(u.left, u.right, u.left + u.width / 2), n.push(u.top, u.bottom, u.top + u.height / 2);
+  }, r = o.parentElement;
+  if (r && r !== document.body && i(r.getBoundingClientRect()), r) {
+    let u = 0;
+    for (const g of Array.from(r.children)) {
+      if (g === o || !(g instanceof HTMLElement)) continue;
+      const m = g.getBoundingClientRect();
+      if (!(m.width === 0 && m.height === 0) && (i(m), ++u >= 30))
         break;
     }
   }
-  const a = [t.left, t.left + t.width, t.left + t.width / 2], l = [t.top, t.top + t.height, t.top + t.height / 2], h = (p, f) => {
-    let m = e + 1, x = null;
-    for (const $ of p)
-      for (const v of f) {
-        const k = Math.abs(v - $);
-        k < m && (m = k, x = { adj: v - $, guide: v });
+  const l = [t.left, t.left + t.width, t.left + t.width / 2], a = [t.top, t.top + t.height, t.top + t.height / 2], h = (u, g) => {
+    let m = e + 1, b = null;
+    for (const $ of u)
+      for (const v of g) {
+        const S = Math.abs(v - $);
+        S < m && (m = S, b = { adj: v - $, guide: v });
       }
-    return x;
-  }, d = h(a, s), c = h(l, n);
+    return b;
+  }, c = h(l, s), d = h(a, n);
   return {
-    adjX: (d == null ? void 0 : d.adj) ?? 0,
-    adjY: (c == null ? void 0 : c.adj) ?? 0,
-    guideV: (d == null ? void 0 : d.guide) ?? null,
-    guideH: (c == null ? void 0 : c.guide) ?? null
+    adjX: (c == null ? void 0 : c.adj) ?? 0,
+    adjY: (d == null ? void 0 : d.adj) ?? 0,
+    guideV: (c == null ? void 0 : c.guide) ?? null,
+    guideH: (d == null ? void 0 : d.guide) ?? null
   };
 }
-const u = Math.round;
-function pt(i) {
-  const t = i.el.getBoundingClientRect();
+const p = Math.round;
+function V(o) {
+  const t = o.el.getBoundingClientRect();
   return { x: t.left + window.scrollX, y: t.top + window.scrollY, w: t.width, h: t.height };
 }
-function j(i) {
-  const t = u(i);
+function H(o) {
+  const t = p(o);
   return t > 0 ? `+${t}` : `${t}`;
 }
-function O(i) {
-  const t = i.filter((s) => s.el.isConnected), e = [
+function L(o) {
+  const t = o.filter((s) => s.el.isConnected), e = [
     `# Sidetation 视觉修改记录（${t.length} 处）`,
     "",
     `- 页面：${location.href}`,
@@ -1236,38 +1263,75 @@ function O(i) {
     ""
   ];
   return t.forEach((s, n) => {
-    const o = s.originalRect;
+    const i = s.originalRect;
     if (e.push(`## ${n + 1}. \`${s.selector}\``), e.push(`- 元素：\`<${s.tag}>\``), s.deleted) {
-      e.push("- **删除该元素**"), e.push(`- 原始盒（页面坐标）：x ${u(o.x)}，y ${u(o.y)}，w ${u(o.w)}，h ${u(o.h)}`), e.push("");
+      e.push("- **删除该元素**"), e.push(`- 原始盒（页面坐标）：x ${p(i.x)}，y ${p(i.y)}，w ${p(i.w)}，h ${p(i.h)}`), e.push("");
       return;
     }
-    const r = pt(s);
-    s.moved && e.push(`- 移动：Δx ${j(s.dx)}px，Δy ${j(s.dy)}px`), s.resized && e.push(
-      `- 尺寸：${u(s.startSize.w)}×${u(s.startSize.h)} → ${u(s.size.w)}×${u(s.size.h)}`
+    const r = V(s);
+    s.moved && e.push(`- 移动：Δx ${H(s.dx)}px，Δy ${H(s.dy)}px`), s.resized && e.push(
+      `- 尺寸：${p(s.startSize.w)}×${p(s.startSize.h)} → ${p(s.size.w)}×${p(s.size.h)}`
     );
-    const a = Object.entries(s.props);
-    if (a.length && e.push(`- 样式：${a.map(([l, h]) => `\`${l}: ${h}\``).join("，")}`), s.text !== null) {
-      const l = (h) => (h ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
-      e.push(`- 文字："${l(s.savedText)}" → "${l(s.text)}"`);
+    const l = Object.entries(s.props);
+    if (l.length && e.push(`- 样式：${l.map(([a, h]) => `\`${a}: ${h}\``).join("，")}`), s.text !== null) {
+      const a = (h) => (h ?? "").trim().replace(/\s+/g, " ").slice(0, 80);
+      e.push(`- 文字："${a(s.savedText)}" → "${a(s.text)}"`);
     }
-    e.push(`- 原始盒（页面坐标）：x ${u(o.x)}，y ${u(o.y)}，w ${u(o.w)}，h ${u(o.h)}`), e.push(`- 修改后：x ${u(r.x)}，y ${u(r.y)}，w ${u(r.w)}，h ${u(r.h)}`), e.push("");
+    e.push(`- 原始盒（页面坐标）：x ${p(i.x)}，y ${p(i.y)}，w ${p(i.w)}，h ${p(i.h)}`), e.push(`- 修改后：x ${p(r.x)}，y ${p(r.y)}，w ${p(r.w)}，h ${p(r.h)}`), e.push("");
   }), e.push("---"), e.push(
     "请把以上视觉改动落实到源码中：根据元素所在布局选择合适的方式（margin / padding / flex / grid / gap / width / height 等），不要直接照抄 transform 位移，那只是编辑器里的临时表现。"
   ), e.join(`
 `);
 }
-function H(i) {
-  return i.filter((s) => s.el.isConnected).map((s) => {
+function ut(o) {
+  return { x: p(o.x), y: p(o.y), w: p(o.w), h: p(o.h) };
+}
+function gt(o) {
+  const e = o.filter((s) => s.el.isConnected).map((s) => {
+    const n = s.originalRect;
+    return {
+      selector: s.selector,
+      tag: s.tag,
+      deleted: s.deleted,
+      moved: s.moved,
+      dx: p(s.dx),
+      dy: p(s.dy),
+      resized: s.resized,
+      startSize: { w: p(s.startSize.w), h: p(s.startSize.h) },
+      size: { w: p(s.size.w), h: p(s.size.h) },
+      props: { ...s.props },
+      text: s.text === null ? null : { before: s.savedText, after: s.text },
+      originalRect: { x: p(n.x), y: p(n.y), w: p(n.w), h: p(n.h) },
+      currentRect: s.deleted ? null : ut(V(s))
+    };
+  });
+  return {
+    version: 1,
+    page: {
+      url: location.href,
+      origin: location.origin,
+      path: location.pathname,
+      title: document.title
+    },
+    viewport: { w: window.innerWidth, h: window.innerHeight },
+    count: e.length,
+    markdown: L(o),
+    css: R(o),
+    edits: e
+  };
+}
+function R(o) {
+  return o.filter((s) => s.el.isConnected).map((s) => {
     const n = [];
     if (s.deleted)
       n.push("  display: none;");
     else {
-      s.moved && n.push(`  transform: translate(${u(s.dx)}px, ${u(s.dy)}px);`), s.resized && (n.push(`  width: ${u(s.size.w - s.sizeAdj.w)}px;`), n.push(`  height: ${u(s.size.h - s.sizeAdj.h)}px;`));
-      for (const [r, a] of Object.entries(s.props)) n.push(`  ${r}: ${a};`);
+      s.moved && n.push(`  transform: translate(${p(s.dx)}px, ${p(s.dy)}px);`), s.resized && (n.push(`  width: ${p(s.size.w - s.sizeAdj.w)}px;`), n.push(`  height: ${p(s.size.h - s.sizeAdj.h)}px;`));
+      for (const [r, l] of Object.entries(s.props)) n.push(`  ${r}: ${l};`);
     }
-    return `${`/* ${s.tag}: ${u(s.startSize.w)}×${u(s.startSize.h)} @ (${u(
+    return `${`/* ${s.tag}: ${p(s.startSize.w)}×${p(s.startSize.h)} @ (${p(
       s.originalRect.x
-    )}, ${u(s.originalRect.y)}) */`}
+    )}, ${p(s.originalRect.y)}) */`}
 ${s.selector} {
 ${n.join(`
 `)}
@@ -1277,14 +1341,14 @@ ${n.join(`
 `) + `
 `;
 }
-function T() {
+function M() {
   return `sidetation:${location.origin}${location.pathname}`;
 }
-function ut(i) {
-  const t = i.filter((e) => e.el.isConnected);
+function ft(o) {
+  const t = o.filter((e) => e.el.isConnected);
   try {
     if (t.length === 0) {
-      localStorage.removeItem(T());
+      localStorage.removeItem(M());
       return;
     }
     const e = t.map((s) => ({
@@ -1301,19 +1365,19 @@ function ut(i) {
       props: s.props,
       savedProps: s.savedProps
     }));
-    localStorage.setItem(T(), JSON.stringify(e));
+    localStorage.setItem(M(), JSON.stringify(e));
   } catch {
   }
 }
-function ft() {
+function mt() {
   try {
-    const i = localStorage.getItem(T());
-    return i ? JSON.parse(i) : null;
+    const o = localStorage.getItem(M());
+    return o ? JSON.parse(o) : null;
   } catch {
     return null;
   }
 }
-class gt {
+class bt {
   constructor(t, e) {
     this.root = t, this.host = e, this.countEl = document.createElement("div"), this.countEl.className = "align-title", this.root.append(this.countEl), this.buildAlignRow(), this.buildDistributeRow();
   }
@@ -1328,9 +1392,9 @@ class gt {
       ["vcenter", "↕", "垂直居中对齐"],
       ["bottom", "⤓", "底对齐"]
     ];
-    for (const [s, n, o] of e) {
+    for (const [s, n, i] of e) {
       const r = document.createElement("button");
-      r.textContent = n, r.title = o, r.addEventListener("click", () => this.host.align(s)), t.append(r);
+      r.textContent = n, r.title = i, r.addEventListener("click", () => this.host.align(s)), t.append(r);
     }
     this.root.append(t);
   }
@@ -1347,10 +1411,10 @@ class gt {
     this.root.classList.remove("open");
   }
 }
-const mt = 3;
-class xt {
+const xt = 3;
+class yt {
   constructor(t = {}) {
-    this.overlay = new _(), this.history = new rt(), this.active = !1, this.hovered = null, this.selected = [], this.drag = null, this.resize = null, this.textEdit = null, this.lastDownAt = 0, this.lastDownTarget = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
+    this.overlay = new q(), this.history = new at(), this.active = !1, this.hovered = null, this.selected = [], this.drag = null, this.resize = null, this.textEdit = null, this.lastDownAt = 0, this.lastDownTarget = null, this.rafId = 0, this.savedUserSelect = "", this.loop = () => {
       if (this.selected.length > 0) {
         const e = this.selected.filter((s) => s.isConnected);
         e.length !== this.selected.length && (this.selected = e);
@@ -1385,8 +1449,8 @@ class xt {
         this.commitTextEdit();
       }
       if (e.preventDefault(), e.stopPropagation(), e.altKey && this.selected.length === 1) {
-        const l = this.selected[0].parentElement;
-        this.isSelectable(l) && this.select([l]);
+        const a = this.selected[0].parentElement;
+        this.isSelectable(a) && this.select([a]);
         return;
       }
       const s = this.pageElementAt(e.clientX, e.clientY);
@@ -1404,8 +1468,8 @@ class xt {
         return;
       }
       this.lastDownAt = n, this.lastDownTarget = s;
-      const o = this.selected.length === 1 ? this.selected[0] : null, r = o !== null && (s === o || o.contains(s)), a = this.selected.length > 1 && this.selected.includes(s);
-      !r && !a && this.select([s]), this.drag = {
+      const i = this.selected.length === 1 ? this.selected[0] : null, r = i !== null && (s === i || i.contains(s)), l = this.selected.length > 1 && this.selected.includes(s);
+      !r && !l && this.select([s]), this.drag = {
         els: this.selected,
         startX: e.clientX,
         startY: e.clientY,
@@ -1421,7 +1485,7 @@ class xt {
       }
       if (this.drag) {
         const s = this.drag;
-        this.drag = null, this.overlay.setGuides(null, null), document.documentElement.style.cursor = "", s.moved && s.items ? this.history.commitBatch(s.items.map(({ rec: n, before: o }) => ({ rec: n, before: o }))) : this.selected.length === 1 && this.selected[0] === s.downTarget || this.select([s.downTarget]), e.preventDefault(), e.stopPropagation();
+        this.drag = null, this.overlay.setGuides(null, null), document.documentElement.style.cursor = "", s.moved && s.items ? this.history.commitBatch(s.items.map(({ rec: n, before: i }) => ({ rec: n, before: i }))) : this.selected.length === 1 && this.selected[0] === s.downTarget || this.select([s.downTarget]), e.preventDefault(), e.stopPropagation();
       }
     }, this.blockEvent = (e) => {
       this.inOverlay(e) || this.textEdit && e.composedPath().includes(this.textEdit.el) || (e.preventDefault(), e.stopImmediatePropagation());
@@ -1443,24 +1507,24 @@ class xt {
       if (this.selected.length === 0) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault(), e.stopPropagation();
-        const l = this.selected.length, h = this.selected.map((d) => {
-          const c = this.history.ensure(d), p = this.history.snapshot(c);
-          return c.deleted = !0, { rec: c, before: p };
+        const a = this.selected.length, h = this.selected.map((c) => {
+          const d = this.history.ensure(c), u = this.history.snapshot(d);
+          return d.deleted = !0, { rec: d, before: u };
         });
-        this.select([]), this.history.commitBatch(h), this.overlay.toast(l > 1 ? `已删除 ${l} 个元素（⌘Z 撤销）` : "已删除（⌘Z 撤销）");
+        this.select([]), this.history.commitBatch(h), this.overlay.toast(a > 1 ? `已删除 ${a} 个元素（⌘Z 撤销）` : "已删除（⌘Z 撤销）");
         return;
       }
       if (this.selected.length === 1) {
-        const l = this.selected[0];
+        const a = this.selected[0];
         if (e.key === "Enter") {
           e.preventDefault(), e.stopPropagation();
-          const h = e.shiftKey ? l.parentElement : l.firstElementChild;
+          const h = e.shiftKey ? a.parentElement : a.firstElementChild;
           this.isSelectable(h) && this.select([h]);
           return;
         }
         if (e.key === "Tab") {
           e.preventDefault(), e.stopPropagation();
-          const h = e.shiftKey ? l.previousElementSibling : l.nextElementSibling;
+          const h = e.shiftKey ? a.previousElementSibling : a.nextElementSibling;
           this.isSelectable(h) && this.select([h]);
           return;
         }
@@ -1473,30 +1537,37 @@ class xt {
       }[e.key];
       if (!r) return;
       e.preventDefault(), e.stopPropagation();
-      const a = this.selected.map((l) => {
-        const h = this.history.ensure(l), d = this.history.snapshot(h);
-        return h.dx += r[0], h.dy += r[1], h.moved = !0, { rec: h, before: d };
+      const l = this.selected.map((a) => {
+        const h = this.history.ensure(a), c = this.history.snapshot(h);
+        return h.dx += r[0], h.dy += r[1], h.moved = !0, { rec: h, before: c };
       });
-      this.history.commitBatch(a, { coalesce: "nudge" });
-    }, this.opts = { autoStart: !1, snapThreshold: 6, ...t }, this.toolbar = new lt(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
+      this.history.commitBatch(l, { coalesce: "nudge" });
+    }, this.opts = {
+      autoStart: !1,
+      snapThreshold: 6,
+      enableMcpSync: !1,
+      mcpEndpoint: "http://127.0.0.1:8787",
+      ...t
+    }, this.toolbar = new dt(this.overlay.toolbarEl, this.overlay.panelEl, this.overlay.shortcutsEl, {
       onToggle: () => this.active ? this.deactivate() : this.activate(),
-      onCopyMd: () => this.copy(O(this.history.all()), "已复制 Markdown"),
-      onCopyCss: () => this.copy(H(this.history.all()), "已复制 CSS"),
+      onCopyMd: () => this.copy(L(this.history.all()), "已复制 Markdown"),
+      onCopyCss: () => this.copy(R(this.history.all()), "已复制 CSS"),
+      onSync: () => this.syncToMcp(),
       onReset: () => this.history.resetAll(),
       onRevert: (e) => this.history.revert(e)
-    }), this.propsPanel = new ht(this.overlay.propsEl, {
+    }, this.opts.enableMcpSync), this.propsPanel = new ct(this.overlay.propsEl, {
       setProps: (e) => this.panelSetProps(e),
       setSize: (e, s) => this.panelSetSize(e, s)
-    }), this.alignPanel = new gt(this.overlay.alignEl, {
+    }), this.alignPanel = new bt(this.overlay.alignEl, {
       align: (e) => this.alignSelected(e),
       distribute: (e) => this.distributeSelected(e)
     }), this.history.onChange = () => {
-      this.syncUI(), ut(this.history.all());
+      this.syncUI(), ft(this.history.all());
     }, this.overlay.onHandleDown = (e, s) => this.startResize(e, s), this.restoreSession(), this.syncUI(), this.opts.autoStart && this.activate();
   }
   /** re-apply edits saved from a previous session on this page, if any */
   restoreSession() {
-    const t = ft();
+    const t = mt();
     if (!t || t.length === 0) return;
     const e = this.history.restore(t);
     e > 0 && this.overlay.toast(`${e} 处修改因页面结构变化未能恢复`);
@@ -1515,7 +1586,7 @@ class xt {
   selectionLabel() {
     if (this.selected.length !== 1) return "";
     const t = this.selected[0], e = t.getBoundingClientRect();
-    return `${Q(t)}  ${Math.round(e.width)}×${Math.round(e.height)}`;
+    return `${tt(t)}  ${Math.round(e.width)}×${Math.round(e.height)}`;
   }
   // ---------- element picking ----------
   pageElementAt(t, e) {
@@ -1572,27 +1643,27 @@ class xt {
   moveDrag(t) {
     const e = this.drag, s = t.clientX - e.startX, n = t.clientY - e.startY;
     if (!e.moved) {
-      if (Math.hypot(s, n) < mt) return;
+      if (Math.hypot(s, n) < xt) return;
       e.moved = !0, e.items = e.els.map((r) => {
-        const a = this.history.ensure(r);
-        return { rec: a, before: this.history.snapshot(a), baseDx: a.dx, baseDy: a.dy };
+        const l = this.history.ensure(r);
+        return { rec: l, before: this.history.snapshot(l), baseDx: l.dx, baseDy: l.dy };
       }), document.documentElement.style.cursor = "move";
     }
-    const o = e.items;
-    if (o.length === 1) {
-      const { rec: r, baseDx: a, baseDy: l } = o[0];
-      let h = a + s, d = l + n;
-      const c = e.els[0].getBoundingClientRect(), p = {
-        left: c.left + (h - r.dx),
-        top: c.top + (d - r.dy),
-        width: c.width,
-        height: c.height
-      }, f = ct(e.els[0], p, this.opts.snapThreshold);
-      h += f.adjX, d += f.adjY, this.overlay.setGuides(f.guideV, f.guideH), r.dx = h, r.dy = d, r.moved = !0, y(r);
+    const i = e.items;
+    if (i.length === 1) {
+      const { rec: r, baseDx: l, baseDy: a } = i[0];
+      let h = l + s, c = a + n;
+      const d = e.els[0].getBoundingClientRect(), u = {
+        left: d.left + (h - r.dx),
+        top: d.top + (c - r.dy),
+        width: d.width,
+        height: d.height
+      }, g = pt(e.els[0], u, this.opts.snapThreshold);
+      h += g.adjX, c += g.adjY, this.overlay.setGuides(g.guideV, g.guideH), r.dx = h, r.dy = c, r.moved = !0, y(r);
     } else {
       this.overlay.setGuides(null, null);
-      for (const { rec: r, baseDx: a, baseDy: l } of o)
-        r.dx = a + s, r.dy = l + n, r.moved = !0, y(r);
+      for (const { rec: r, baseDx: l, baseDy: a } of i)
+        r.dx = l + s, r.dy = a + n, r.moved = !0, y(r);
     }
   }
   // ---------- resize ----------
@@ -1600,27 +1671,27 @@ class xt {
     if (this.selected.length !== 1) return;
     const s = this.selected[0];
     e.preventDefault(), e.stopPropagation();
-    const n = this.history.ensure(s), o = s.getBoundingClientRect();
+    const n = this.history.ensure(s), i = s.getBoundingClientRect();
     this.resize = {
       rec: n,
       before: this.history.snapshot(n),
       dir: t,
       startX: e.clientX,
       startY: e.clientY,
-      startW: o.width,
-      startH: o.height,
+      startW: i.width,
+      startH: i.height,
       baseDx: n.dx,
       baseDy: n.dy
     };
   }
   moveResize(t) {
-    const e = this.resize, { rec: s, dir: n } = e, o = t.clientX - e.startX, r = t.clientY - e.startY;
-    let a = e.startW, l = e.startH;
-    if (n.includes("e") && (a = e.startW + o), n.includes("w") && (a = e.startW - o), n.includes("s") && (l = e.startH + r), n.includes("n") && (l = e.startH - r), t.shiftKey && e.startH > 0 && e.startW > 0) {
+    const e = this.resize, { rec: s, dir: n } = e, i = t.clientX - e.startX, r = t.clientY - e.startY;
+    let l = e.startW, a = e.startH;
+    if (n.includes("e") && (l = e.startW + i), n.includes("w") && (l = e.startW - i), n.includes("s") && (a = e.startH + r), n.includes("n") && (a = e.startH - r), t.shiftKey && e.startH > 0 && e.startW > 0) {
       const h = e.startW / e.startH;
-      n === "e" || n === "w" ? l = a / h : n === "n" || n === "s" ? a = l * h : Math.abs(o) > Math.abs(r) ? l = a / h : a = l * h;
+      n === "e" || n === "w" ? a = l / h : n === "n" || n === "s" ? l = a * h : Math.abs(i) > Math.abs(r) ? a = l / h : l = a * h;
     }
-    a = Math.max(8, Math.round(a)), l = Math.max(8, Math.round(l)), s.dx = n.includes("w") ? e.baseDx + (e.startW - a) : e.baseDx, s.dy = n.includes("n") ? e.baseDy + (e.startH - l) : e.baseDy, (s.dx !== e.baseDx || s.dy !== e.baseDy) && (s.moved = !0), s.size = { w: a, h: l }, s.resized = !0, y(s);
+    l = Math.max(8, Math.round(l)), a = Math.max(8, Math.round(a)), s.dx = n.includes("w") ? e.baseDx + (e.startW - l) : e.baseDx, s.dy = n.includes("n") ? e.baseDy + (e.startH - a) : e.baseDy, (s.dx !== e.baseDx || s.dy !== e.baseDy) && (s.moved = !0), s.size = { w: l, h: a }, s.resized = !0, y(s);
   }
   // ---------- properties panel ----------
   panelSetProps(t) {
@@ -1628,8 +1699,8 @@ class xt {
     const e = this.selected[0];
     this.commitTextEdit();
     const s = this.history.ensure(e), n = this.history.snapshot(s);
-    for (const [o, r] of Object.entries(t))
-      o in s.savedProps || (s.savedProps[o] = e.style.getPropertyValue(o)), r === null ? delete s.props[o] : s.props[o] = r;
+    for (const [i, r] of Object.entries(t))
+      i in s.savedProps || (s.savedProps[i] = e.style.getPropertyValue(i)), r === null ? delete s.props[i] : s.props[i] = r;
     this.history.commit(s, n, { coalesce: `props:${Object.keys(t).sort().join(",")}` });
   }
   panelSetSize(t, e) {
@@ -1641,51 +1712,51 @@ class xt {
   // ---------- multi-select: align / distribute ----------
   alignSelected(t) {
     if (this.selected.length < 2) return;
-    const e = this.selected.map((d) => ({
-      rec: this.history.ensure(d),
-      rect: d.getBoundingClientRect()
-    })), s = e.map(({ rec: d }) => ({ rec: d, before: this.history.snapshot(d) })), n = Math.min(...e.map((d) => d.rect.left)), o = Math.max(...e.map((d) => d.rect.right)), r = Math.min(...e.map((d) => d.rect.top)), a = Math.max(...e.map((d) => d.rect.bottom)), l = (n + o) / 2, h = (r + a) / 2;
-    for (const { rec: d, rect: c } of e) {
-      let p = 0, f = 0;
+    const e = this.selected.map((c) => ({
+      rec: this.history.ensure(c),
+      rect: c.getBoundingClientRect()
+    })), s = e.map(({ rec: c }) => ({ rec: c, before: this.history.snapshot(c) })), n = Math.min(...e.map((c) => c.rect.left)), i = Math.max(...e.map((c) => c.rect.right)), r = Math.min(...e.map((c) => c.rect.top)), l = Math.max(...e.map((c) => c.rect.bottom)), a = (n + i) / 2, h = (r + l) / 2;
+    for (const { rec: c, rect: d } of e) {
+      let u = 0, g = 0;
       switch (t) {
         case "left":
-          p = n - c.left;
+          u = n - d.left;
           break;
         case "right":
-          p = o - c.right;
+          u = i - d.right;
           break;
         case "hcenter":
-          p = l - (c.left + c.width / 2);
+          u = a - (d.left + d.width / 2);
           break;
         case "top":
-          f = r - c.top;
+          g = r - d.top;
           break;
         case "bottom":
-          f = a - c.bottom;
+          g = l - d.bottom;
           break;
         case "vcenter":
-          f = h - (c.top + c.height / 2);
+          g = h - (d.top + d.height / 2);
           break;
       }
-      (p !== 0 || f !== 0) && (d.dx += p, d.dy += f, d.moved = !0, y(d));
+      (u !== 0 || g !== 0) && (c.dx += u, c.dy += g, c.moved = !0, y(c));
     }
     this.history.commitBatch(s);
   }
   distributeSelected(t) {
     if (this.selected.length < 3) return;
-    const e = this.selected.map((c) => ({
-      rec: this.history.ensure(c),
-      rect: c.getBoundingClientRect()
-    })), s = e.map(({ rec: c }) => ({ rec: c, before: this.history.snapshot(c) })), n = [...e].sort(
-      (c, p) => t === "h" ? c.rect.left - p.rect.left : c.rect.top - p.rect.top
-    ), o = n[0].rect, r = n[n.length - 1].rect, a = t === "h" ? r.right - o.left : r.bottom - o.top, l = n.reduce(
-      (c, p) => c + (t === "h" ? p.rect.width : p.rect.height),
+    const e = this.selected.map((d) => ({
+      rec: this.history.ensure(d),
+      rect: d.getBoundingClientRect()
+    })), s = e.map(({ rec: d }) => ({ rec: d, before: this.history.snapshot(d) })), n = [...e].sort(
+      (d, u) => t === "h" ? d.rect.left - u.rect.left : d.rect.top - u.rect.top
+    ), i = n[0].rect, r = n[n.length - 1].rect, l = t === "h" ? r.right - i.left : r.bottom - i.top, a = n.reduce(
+      (d, u) => d + (t === "h" ? u.rect.width : u.rect.height),
       0
-    ), h = (a - l) / (n.length - 1);
-    let d = t === "h" ? o.left : o.top;
-    for (const { rec: c, rect: p } of n) {
-      const f = t === "h" ? p.width : p.height, m = t === "h" ? p.left : p.top, x = d - m;
-      x !== 0 && (t === "h" ? c.dx += x : c.dy += x, c.moved = !0, y(c)), d += f + h;
+    ), h = (l - a) / (n.length - 1);
+    let c = t === "h" ? i.left : i.top;
+    for (const { rec: d, rect: u } of n) {
+      const g = t === "h" ? u.width : u.height, m = t === "h" ? u.left : u.top, b = c - m;
+      b !== 0 && (t === "h" ? d.dx += b : d.dy += b, d.moved = !0, y(d)), c += g + h;
     }
     this.history.commitBatch(s);
   }
@@ -1693,19 +1764,40 @@ class xt {
   copy(t, e) {
     var n;
     const s = () => {
-      const o = document.createElement("textarea");
-      o.value = t, o.style.position = "fixed", o.style.opacity = "0", document.body.append(o), o.select(), document.execCommand("copy"), o.remove(), this.overlay.toast(e);
+      const i = document.createElement("textarea");
+      i.value = t, i.style.position = "fixed", i.style.opacity = "0", document.body.append(i), i.select(), document.execCommand("copy"), i.remove(), this.overlay.toast(e);
     };
     (n = navigator.clipboard) != null && n.writeText ? navigator.clipboard.writeText(t).then(
       () => this.overlay.toast(e),
       () => s()
     ) : s();
   }
+  /** POST the current edits to the local MCP bridge so an AI agent can read them */
+  async syncToMcp() {
+    const t = gt(this.history.all());
+    if (t.count === 0) {
+      this.overlay.toast("没有可同步的修改");
+      return;
+    }
+    const e = `${this.opts.mcpEndpoint.replace(/\/$/, "")}/ingest`;
+    this.toolbar.setSyncState("syncing");
+    try {
+      const s = await fetch(e, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(t)
+      });
+      if (!s.ok) throw new Error(`HTTP ${s.status}`);
+      this.toolbar.setSyncState("idle"), this.overlay.toast(`已同步 ${t.count} 处修改到 MCP`);
+    } catch (s) {
+      this.toolbar.setSyncState("idle"), this.overlay.toast(`同步失败：本地 MCP 服务未启动？(${String(s)})`);
+    }
+  }
   getMarkdown() {
-    return O(this.history.all());
+    return L(this.history.all());
   }
   getCSS() {
-    return H(this.history.all());
+    return R(this.history.all());
   }
   get isActive() {
     return this.active;
@@ -1720,10 +1812,10 @@ class xt {
     this.history.prune(), this.toolbar.update(this.active, this.history.all()), this.propsPanel.sync();
   }
 }
-function bt(i) {
-  return new xt(i);
+function wt(o) {
+  return new yt(o);
 }
 export {
-  xt as Sidetation,
-  bt as init
+  yt as Sidetation,
+  wt as init
 };

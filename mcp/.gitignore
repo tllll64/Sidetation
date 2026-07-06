@@ -1,0 +1,8 @@
+node_modules/
+.sidetation-mcp.json
+.sidetation-mcp.json.tmp-*
+.e2e-store.json
+.e2e.log
+.e2e.pid
+.test-store.json
+.stdio-out.txt

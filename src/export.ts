@@ -61,6 +61,75 @@ export function toMarkdown(records: EditRecord[]): string {
   return lines.join('\n');
 }
 
+/** one edit, serialized without any DOM references so it survives the wire */
+export interface SyncEdit {
+  selector: string;
+  tag: string;
+  deleted: boolean;
+  moved: boolean;
+  dx: number;
+  dy: number;
+  resized: boolean;
+  startSize: { w: number; h: number };
+  size: { w: number; h: number };
+  props: Record<string, string>;
+  text: { before: string | null; after: string } | null;
+  originalRect: Rect;
+  currentRect: Rect | null;
+}
+
+/** full snapshot POSTed to the MCP bridge; carries pre-rendered md/css so the
+ *  server never needs a DOM to reproduce the export */
+export interface SyncPayload {
+  version: 1;
+  page: { url: string; origin: string; path: string; title: string };
+  viewport: { w: number; h: number };
+  count: number;
+  markdown: string;
+  css: string;
+  edits: SyncEdit[];
+}
+
+function roundRect(rect: Rect): Rect {
+  return { x: r(rect.x), y: r(rect.y), w: r(rect.w), h: r(rect.h) };
+}
+
+export function toSyncPayload(records: EditRecord[]): SyncPayload {
+  const live = records.filter((rec) => rec.el.isConnected);
+  const edits: SyncEdit[] = live.map((rec) => {
+    const o = rec.originalRect;
+    return {
+      selector: rec.selector,
+      tag: rec.tag,
+      deleted: rec.deleted,
+      moved: rec.moved,
+      dx: r(rec.dx),
+      dy: r(rec.dy),
+      resized: rec.resized,
+      startSize: { w: r(rec.startSize.w), h: r(rec.startSize.h) },
+      size: { w: r(rec.size.w), h: r(rec.size.h) },
+      props: { ...rec.props },
+      text: rec.text === null ? null : { before: rec.savedText, after: rec.text },
+      originalRect: { x: r(o.x), y: r(o.y), w: r(o.w), h: r(o.h) },
+      currentRect: rec.deleted ? null : roundRect(currentRect(rec)),
+    };
+  });
+  return {
+    version: 1,
+    page: {
+      url: location.href,
+      origin: location.origin,
+      path: location.pathname,
+      title: document.title,
+    },
+    viewport: { w: window.innerWidth, h: window.innerHeight },
+    count: edits.length,
+    markdown: toMarkdown(records),
+    css: toCSS(records),
+    edits,
+  };
+}
+
 export function toCSS(records: EditRecord[]): string {
   const live = records.filter((rec) => rec.el.isConnected);
   const blocks = live.map((rec) => {
