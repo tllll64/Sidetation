@@ -53,7 +53,7 @@ if (import.meta.env.DEV) {
 
 **CSS**——可直接粘贴的覆盖样式（transform / width / height）。
 
-**同步 MCP（直连 AI agent，可选）**——默认隐藏；用 `init({ enableMcpSync: true })` 开启后，工具栏会出现「同步 MCP」按钮，把修改推送到本地 MCP 桥，任意支持 MCP 的 agent（Claude Code / Cursor / Codex / CodeBuddy / WorkBuddy…）即可直接读取，省去复制粘贴。stdio 与 Streamable HTTP 两种传输都支持，多个 agent 可同时读同一份修改。配置见 [`mcp/README.md`](mcp/README.md)。
+**同步 MCP（直连 AI agent，可选）**——默认隐藏；用 `init({ enableMcpSync: true })` 开启后，工具栏会出现「同步 MCP」按钮，把修改推送到本地 MCP 桥，任意支持 MCP 的 agent（Claude Code / Cursor / Codex / CodeBuddy / WorkBuddy…）即可直接读取，省去复制粘贴。stdio 与 Streamable HTTP 两种传输都支持，多个 agent 可同时读同一份修改。配置见 [`mcp/README.md`](mcp/README.md)；CodeBuddy 用户可看端到端教程 [`docs/codebuddy.md`](docs/codebuddy.md)。
 
 ## 技术要点
 
