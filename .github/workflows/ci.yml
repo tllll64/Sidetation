@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write # gh release create（仅 tag 触发时用到）
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # package:ext = typecheck + vite build + 生成注入产物 + 打包扩展 zip
+      - run: npm run package:ext
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sidetation-dist
+          path: dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sidetation-extension
+          path: dist/sidetation-extension.zip
+
+      # 推 v* tag 时自动建 Release 并附上扩展 zip
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/sidetation-extension.zip --generate-notes

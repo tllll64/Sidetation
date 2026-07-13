@@ -43,6 +43,10 @@ export class PropsPanel {
   private el: HTMLElement | null = null;
   private flow: Flow = 'none';
 
+  private cssBody!: HTMLElement;
+  private cssArrowEl!: HTMLElement;
+  private cssOpen = false;
+
   private flowBtns: HTMLButtonElement[] = [];
   private wInput!: HTMLInputElement;
   private hInput!: HTMLInputElement;
@@ -122,6 +126,24 @@ export class PropsPanel {
   }
 
   private build(): void {
+    // ----- CSS viewer (collapsible, sits at top of panel) -----
+    const cssSection = document.createElement('div');
+    cssSection.className = 'props-section css-section';
+
+    const cssTitleRow = document.createElement('div');
+    cssTitleRow.className = 'props-title css-title';
+    this.cssArrowEl = document.createElement('span');
+    this.cssArrowEl.className = 'css-arrow';
+    this.cssArrowEl.textContent = '▶';
+    cssTitleRow.append(this.cssArrowEl, ' CSS');
+    cssTitleRow.addEventListener('click', () => this.toggleCssViewer());
+
+    this.cssBody = document.createElement('div');
+    this.cssBody.className = 'css-body';
+
+    cssSection.append(cssTitleRow, this.cssBody);
+    this.root.append(cssSection);
+
     // ----- Auto layout -----
     const layout = this.section('Auto layout');
 
@@ -305,6 +327,143 @@ export class PropsPanel {
     });
   }
 
+  // ---------- CSS viewer ----------
+
+  private toggleCssViewer(): void {
+    this.cssOpen = !this.cssOpen;
+    this.cssArrowEl.classList.toggle('open', this.cssOpen);
+    this.cssBody.classList.toggle('open', this.cssOpen);
+    if (this.cssOpen && this.el) this.renderCSS(this.el);
+  }
+
+  private renderCSS(el: HTMLElement): void {
+    this.cssBody.replaceChildren();
+    const cs = getComputedStyle(el);
+    const get = (p: string): string => cs.getPropertyValue(p).trim();
+
+    const shortFour = (t: string, r: string, b: string, l: string): string => {
+      if (t === r && r === b && b === l) return t;
+      if (t === b && r === l) return `${t} ${r}`;
+      return `${t} ${r} ${b} ${l}`;
+    };
+
+    const rows: [string, string, string][] = [];
+    const add = (group: string, prop: string, val: string): void => {
+      if (val) rows.push([group, prop, val]);
+    };
+
+    // 定位
+    add('定位', 'position', get('position'));
+    if (get('position') !== 'static') {
+      for (const p of ['top', 'right', 'bottom', 'left']) {
+        const v = get(p); if (v !== 'auto') add('定位', p, v);
+      }
+      const zi = get('z-index'); if (zi !== 'auto') add('定位', 'z-index', zi);
+    }
+    const fl = get('float'); if (fl !== 'none') add('定位', 'float', fl);
+
+    // 盒模型
+    add('盒模型', 'display', get('display'));
+    add('盒模型', 'box-sizing', get('box-sizing'));
+    add('盒模型', 'width', get('width'));
+    add('盒模型', 'height', get('height'));
+    const mw = get('min-width'); if (mw !== '0px') add('盒模型', 'min-width', mw);
+    const xw = get('max-width'); if (xw !== 'none') add('盒模型', 'max-width', xw);
+    const mh = get('min-height'); if (mh !== '0px') add('盒模型', 'min-height', mh);
+    const xh = get('max-height'); if (xh !== 'none') add('盒模型', 'max-height', xh);
+    const ox = get('overflow-x'), oy = get('overflow-y');
+    add('盒模型', 'overflow', ox === oy ? ox : `${ox} / ${oy}`);
+
+    // 间距
+    add('间距', 'margin', shortFour(get('margin-top'), get('margin-right'), get('margin-bottom'), get('margin-left')));
+    add('间距', 'padding', shortFour(get('padding-top'), get('padding-right'), get('padding-bottom'), get('padding-left')));
+
+    // 字体
+    add('字体', 'font-family', get('font-family'));
+    add('字体', 'font-size', get('font-size'));
+    add('字体', 'font-weight', get('font-weight'));
+    add('字体', 'line-height', get('line-height'));
+    const ls = get('letter-spacing'); if (ls !== 'normal') add('字体', 'letter-spacing', ls);
+    add('字体', 'color', get('color'));
+    add('字体', 'text-align', get('text-align'));
+    const tdl = get('text-decoration-line');
+    if (tdl !== 'none') add('字体', 'text-decoration', `${tdl} ${get('text-decoration-color')}`.trim());
+    const tt = get('text-transform'); if (tt !== 'none') add('字体', 'text-transform', tt);
+    const ws = get('white-space'); if (ws !== 'normal') add('字体', 'white-space', ws);
+
+    // 背景
+    add('背景', 'background-color', get('background-color'));
+    const bi = get('background-image'); if (bi !== 'none') add('背景', 'background-image', bi);
+    const bsz = get('background-size'); if (bsz !== 'auto') add('背景', 'background-size', bsz);
+
+    // 边框
+    const btw = get('border-top-width'), bts = get('border-top-style'), btc = get('border-top-color');
+    if (bts !== 'none') add('边框', 'border', `${btw} ${bts} ${btc}`);
+    const bRadius = shortFour(
+      get('border-top-left-radius'), get('border-top-right-radius'),
+      get('border-bottom-right-radius'), get('border-bottom-left-radius')
+    );
+    if (bRadius !== '0px') add('边框', 'border-radius', bRadius);
+    const ol = get('outline'); if (!ol.startsWith('0px')) add('边框', 'outline', ol);
+
+    // Flex / Grid
+    const disp = get('display');
+    if (disp.includes('flex')) {
+      add('Flex', 'flex-direction', get('flex-direction'));
+      add('Flex', 'flex-wrap', get('flex-wrap'));
+      add('Flex', 'justify-content', get('justify-content'));
+      add('Flex', 'align-items', get('align-items'));
+      const rg = get('row-gap'), cg = get('column-gap');
+      if (rg !== 'normal' && rg !== '0px') add('Flex', 'gap', rg === cg ? rg : `${rg} ${cg}`);
+    }
+    if (disp.includes('grid')) {
+      add('Grid', 'grid-template-columns', get('grid-template-columns'));
+      add('Grid', 'grid-template-rows', get('grid-template-rows'));
+      add('Grid', 'grid-auto-flow', get('grid-auto-flow'));
+    }
+    const as = get('align-self'); if (as !== 'auto') add('Flex', 'align-self', as);
+    const fg = get('flex-grow'); if (fg !== '0') add('Flex', 'flex-grow', fg);
+    const fsh = get('flex-shrink'); if (fsh !== '1') add('Flex', 'flex-shrink', fsh);
+
+    // 效果
+    const op = get('opacity'); if (op !== '1') add('效果', 'opacity', op);
+    const bsh = get('box-shadow'); if (bsh !== 'none') add('效果', 'box-shadow', bsh);
+    const tf = get('transform'); if (tf !== 'none') add('效果', 'transform', tf);
+    const tr = get('transition'); if (tr && !tr.startsWith('all 0s')) add('效果', 'transition', tr);
+    add('效果', 'cursor', get('cursor'));
+    const pe = get('pointer-events'); if (pe !== 'auto') add('效果', 'pointer-events', pe);
+
+    if (rows.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'css-empty';
+      empty.textContent = '暂无样式';
+      this.cssBody.append(empty);
+      return;
+    }
+
+    let lastGroup = '';
+    for (const [group, prop, val] of rows) {
+      if (group !== lastGroup) {
+        const gh = document.createElement('div');
+        gh.className = 'css-group-title';
+        gh.textContent = group;
+        this.cssBody.append(gh);
+        lastGroup = group;
+      }
+      const rowEl = document.createElement('div');
+      rowEl.className = 'css-entry';
+      const p = document.createElement('span');
+      p.className = 'css-prop';
+      p.textContent = prop;
+      const v = document.createElement('span');
+      v.className = 'css-val';
+      v.textContent = val;
+      v.title = val;
+      rowEl.append(p, v);
+      this.cssBody.append(rowEl);
+    }
+  }
+
   // ---------- reads ----------
 
   private markFlow(): void {
@@ -363,6 +522,8 @@ export class PropsPanel {
     const stroke = parseColor(cs.borderTopColor);
     this.strokeColor.value = stroke.hex;
     this.strokeWidth.value = String(parseFloat(cs.borderTopWidth) || 0);
+
+    if (this.cssOpen) this.renderCSS(el);
   }
 
   // ---------- public ----------

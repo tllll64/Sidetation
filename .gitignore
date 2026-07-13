@@ -1,0 +1,5 @@
+node_modules/
+dist/
+extension/sidetation.js
+generated/
+.DS_Store

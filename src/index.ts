@@ -1,53 +1,19 @@
-import type { EditRecord, SidetationOptions, Snapshot } from './types';
-import { Overlay, type Dir } from './overlay';
+import type { SidetationOptions } from './types';
+import { Overlay } from './overlay';
 import { History } from './history';
 import { Toolbar } from './toolbar';
 import { PropsPanel } from './props-panel';
-import { computeSnap } from './snap';
 import { shortLabel } from './selector';
 import { toMarkdown, toCSS, toSyncPayload } from './export';
 import { applyRecord } from './apply';
 import { save as persistSave, load as persistLoad } from './persist';
 import { AlignPanel, type AlignMode } from './align-panel';
+import { DragController } from './drag-controller';
+import { ResizeController } from './resize-controller';
+import { KeyboardController } from './keyboard';
+import { TextEditController } from './text-edit';
 
 export type { SidetationOptions, EditRecord } from './types';
-
-const DRAG_THRESHOLD = 3;
-
-interface DragItem {
-  rec: EditRecord;
-  before: Snapshot;
-  baseDx: number;
-  baseDy: number;
-}
-
-interface DragState {
-  els: HTMLElement[];
-  startX: number;
-  startY: number;
-  items: DragItem[] | null;
-  moved: boolean;
-  downTarget: HTMLElement;
-}
-
-interface TextEditState {
-  el: HTMLElement;
-  rec: EditRecord;
-  before: Snapshot;
-  savedUserSelect: string;
-}
-
-interface ResizeState {
-  rec: EditRecord;
-  before: Snapshot;
-  dir: Dir;
-  startX: number;
-  startY: number;
-  startW: number;
-  startH: number;
-  baseDx: number;
-  baseDy: number;
-}
 
 export class Sidetation {
   private overlay = new Overlay();
@@ -57,12 +23,14 @@ export class Sidetation {
   private alignPanel: AlignPanel;
   private opts: Required<SidetationOptions>;
 
+  private drag: DragController;
+  private resize: ResizeController;
+  private keyboard: KeyboardController;
+  private textEdit: TextEditController;
+
   private active = false;
   private hovered: HTMLElement | null = null;
   private selected: HTMLElement[] = [];
-  private drag: DragState | null = null;
-  private resize: ResizeState | null = null;
-  private textEdit: TextEditState | null = null;
   private lastDownAt = 0;
   private lastDownTarget: HTMLElement | null = null;
   private rafId = 0;
@@ -92,11 +60,25 @@ export class Sidetation {
       align: (mode) => this.alignSelected(mode),
       distribute: (axis) => this.distributeSelected(axis),
     });
+    this.drag = new DragController(this.history, this.overlay, this.opts.snapThreshold);
+    this.resize = new ResizeController(this.history);
+    this.textEdit = new TextEditController(this.history);
+    this.keyboard = new KeyboardController(this.history, this.overlay, {
+      inOverlay: (e) => this.inOverlay(e),
+      isSelectable: (el: Element | null): el is HTMLElement => this.isSelectable(el),
+      getSelected: () => this.selected,
+      select: (els) => this.select(els),
+      deactivate: () => this.deactivate(),
+      isTextEditing: () => this.textEdit.active,
+      commitTextEdit: () => this.textEdit.commit(),
+    });
     this.history.onChange = () => {
       this.syncUI();
       persistSave(this.history.all());
     };
-    this.overlay.onHandleDown = (dir, e) => this.startResize(dir, e);
+    this.overlay.onHandleDown = (dir, e) => {
+      if (this.selected.length === 1) this.resize.start(dir, e, this.selected[0]);
+    };
     this.restoreSession();
     this.syncUI();
     if (this.opts.autoStart) this.activate();
@@ -124,14 +106,14 @@ export class Sidetation {
     window.addEventListener('pointerup', this.onPointerUp, true);
     window.addEventListener('pointercancel', this.onPointerUp, true);
     window.addEventListener('click', this.blockEvent, true);
-    window.addEventListener('keydown', this.onKeyDown, true);
+    window.addEventListener('keydown', this.keyboard.onKeyDown, true);
     this.rafId = requestAnimationFrame(this.loop);
     this.syncUI();
   }
 
   deactivate(): void {
     if (!this.active) return;
-    this.commitTextEdit();
+    this.textEdit.commit();
     this.active = false;
     document.documentElement.style.userSelect = this.savedUserSelect;
     document.documentElement.style.cursor = '';
@@ -140,12 +122,12 @@ export class Sidetation {
     window.removeEventListener('pointerup', this.onPointerUp, true);
     window.removeEventListener('pointercancel', this.onPointerUp, true);
     window.removeEventListener('click', this.blockEvent, true);
-    window.removeEventListener('keydown', this.onKeyDown, true);
+    window.removeEventListener('keydown', this.keyboard.onKeyDown, true);
     cancelAnimationFrame(this.rafId);
     this.hovered = null;
     this.selected = [];
-    this.drag = null;
-    this.resize = null;
+    this.drag.cancel();
+    this.resize.cancel();
     this.propsPanel.setTarget(null);
     this.alignPanel.hide();
     this.overlay.setHover(null);
@@ -249,12 +231,12 @@ export class Sidetation {
   // ---------- pointer events ----------
 
   private onPointerMove = (e: PointerEvent): void => {
-    if (this.resize) {
-      this.moveResize(e);
+    if (this.resize.active) {
+      this.resize.move(e);
       return;
     }
-    if (this.drag) {
-      this.moveDrag(e);
+    if (this.drag.active) {
+      this.drag.move(e);
       return;
     }
     if (this.inOverlay(e)) {
@@ -269,10 +251,9 @@ export class Sidetation {
 
     // while editing text: clicks inside stay native (caret placement),
     // clicking anywhere else commits the edit and falls through
-    if (this.textEdit) {
-      const path = e.composedPath();
-      if (path.includes(this.textEdit.el)) return;
-      this.commitTextEdit();
+    if (this.textEdit.active) {
+      if (this.textEdit.contains(e)) return;
+      this.textEdit.commit();
     }
 
     e.preventDefault();
@@ -315,42 +296,26 @@ export class Sidetation {
 
     // Dragging anywhere inside the selection moves the whole selection; a
     // plain click (no movement) on a descendant re-selects just that descendant.
-    this.drag = {
-      els: this.selected,
-      startX: e.clientX,
-      startY: e.clientY,
-      items: null,
-      moved: false,
-      downTarget: target,
-    };
+    this.drag.start(e, this.selected, target);
   };
 
   private onPointerUp = (e: PointerEvent): void => {
-    if (this.resize) {
-      const rs = this.resize;
-      this.resize = null;
-      document.documentElement.style.cursor = '';
-      this.history.commit(rs.rec, rs.before);
+    if (this.resize.active) {
+      this.resize.end();
       return;
     }
-    if (this.drag) {
-      const d = this.drag;
-      this.drag = null;
-      this.overlay.setGuides(null, null);
-      document.documentElement.style.cursor = '';
-      if (d.moved && d.items) {
-        this.history.commitBatch(d.items.map(({ rec, before }) => ({ rec, before })));
-      } else if (!(this.selected.length === 1 && this.selected[0] === d.downTarget)) {
-        this.select([d.downTarget]); // click without dragging refines to the clicked descendant
-      }
-      e.preventDefault();
-      e.stopPropagation();
+    const ended = this.drag.end();
+    if (!ended) return;
+    if (!ended.moved && !(this.selected.length === 1 && this.selected[0] === ended.downTarget)) {
+      this.select([ended.downTarget]); // click without dragging refines to the clicked descendant
     }
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   private blockEvent = (e: Event): void => {
     if (this.inOverlay(e)) return;
-    if (this.textEdit && e.composedPath().includes(this.textEdit.el)) return;
+    if (this.textEdit.contains(e)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
   };
@@ -358,255 +323,20 @@ export class Sidetation {
   // ---------- text editing ----------
 
   private startTextEdit(el: HTMLElement): void {
-    if (el.childElementCount > 0 || !(el.textContent ?? '').trim()) {
+    if (!this.textEdit.canEdit(el)) {
       this.overlay.toast('仅支持纯文本元素（无子元素）');
       return;
     }
     this.select([el]);
-    const rec = this.history.ensure(el);
-    this.textEdit = {
-      el,
-      rec,
-      before: this.history.snapshot(rec),
-      savedUserSelect: el.style.getPropertyValue('user-select'),
-    };
-    el.setAttribute('contenteditable', 'plaintext-only');
-    if (!el.isContentEditable) el.setAttribute('contenteditable', 'true');
-    el.style.setProperty('user-select', 'text'); // page-wide user-select:none would block the caret
-    el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+    this.textEdit.start(el);
   }
-
-  private commitTextEdit(): void {
-    const t = this.textEdit;
-    if (!t) return;
-    this.textEdit = null;
-    t.el.removeAttribute('contenteditable');
-    if (t.savedUserSelect) t.el.style.setProperty('user-select', t.savedUserSelect);
-    else t.el.style.removeProperty('user-select');
-    window.getSelection()?.removeAllRanges();
-    const newText = t.el.textContent ?? '';
-    t.rec.text = newText === t.rec.savedText ? null : newText;
-    this.history.commit(t.rec, t.before);
-  }
-
-  // ---------- drag ----------
-
-  private moveDrag(e: PointerEvent): void {
-    const d = this.drag!;
-    const rawDx = e.clientX - d.startX;
-    const rawDy = e.clientY - d.startY;
-    if (!d.moved) {
-      if (Math.hypot(rawDx, rawDy) < DRAG_THRESHOLD) return;
-      d.moved = true;
-      d.items = d.els.map((el) => {
-        const rec = this.history.ensure(el);
-        return { rec, before: this.history.snapshot(rec), baseDx: rec.dx, baseDy: rec.dy };
-      });
-      document.documentElement.style.cursor = 'move';
-    }
-    const items = d.items!;
-
-    if (items.length === 1) {
-      const { rec, baseDx, baseDy } = items[0];
-      let dx = baseDx + rawDx;
-      let dy = baseDy + rawDy;
-
-      // snap against siblings/parent using the proposed (un-snapped) rect
-      const cur = d.els[0].getBoundingClientRect();
-      const proposed = {
-        left: cur.left + (dx - rec.dx),
-        top: cur.top + (dy - rec.dy),
-        width: cur.width,
-        height: cur.height,
-      };
-      const snap = computeSnap(d.els[0], proposed, this.opts.snapThreshold);
-      dx += snap.adjX;
-      dy += snap.adjY;
-      this.overlay.setGuides(snap.guideV, snap.guideH);
-
-      rec.dx = dx;
-      rec.dy = dy;
-      rec.moved = true;
-      applyRecord(rec);
-    } else {
-      // multi-select: move the whole group by the same raw delta, no snapping
-      this.overlay.setGuides(null, null);
-      for (const { rec, baseDx, baseDy } of items) {
-        rec.dx = baseDx + rawDx;
-        rec.dy = baseDy + rawDy;
-        rec.moved = true;
-        applyRecord(rec);
-      }
-    }
-  }
-
-  // ---------- resize ----------
-
-  private startResize(dir: Dir, e: PointerEvent): void {
-    if (this.selected.length !== 1) return;
-    const el = this.selected[0];
-    e.preventDefault();
-    e.stopPropagation();
-    const rec = this.history.ensure(el);
-    const r = el.getBoundingClientRect();
-    this.resize = {
-      rec,
-      before: this.history.snapshot(rec),
-      dir,
-      startX: e.clientX,
-      startY: e.clientY,
-      startW: r.width,
-      startH: r.height,
-      baseDx: rec.dx,
-      baseDy: rec.dy,
-    };
-  }
-
-  private moveResize(e: PointerEvent): void {
-    const rs = this.resize!;
-    const { rec, dir } = rs;
-    const ddx = e.clientX - rs.startX;
-    const ddy = e.clientY - rs.startY;
-
-    let w = rs.startW;
-    let h = rs.startH;
-    if (dir.includes('e')) w = rs.startW + ddx;
-    if (dir.includes('w')) w = rs.startW - ddx;
-    if (dir.includes('s')) h = rs.startH + ddy;
-    if (dir.includes('n')) h = rs.startH - ddy;
-
-    // Shift keeps the aspect ratio, Figma-style, on corner AND edge handles
-    if (e.shiftKey && rs.startH > 0 && rs.startW > 0) {
-      const ratio = rs.startW / rs.startH;
-      if (dir === 'e' || dir === 'w') h = w / ratio;
-      else if (dir === 'n' || dir === 's') w = h * ratio;
-      else if (Math.abs(ddx) > Math.abs(ddy)) h = w / ratio;
-      else w = h * ratio;
-    }
-    w = Math.max(8, Math.round(w));
-    h = Math.max(8, Math.round(h));
-
-    // keep the opposite edge fixed when resizing from the north/west side
-    rec.dx = dir.includes('w') ? rs.baseDx + (rs.startW - w) : rs.baseDx;
-    rec.dy = dir.includes('n') ? rs.baseDy + (rs.startH - h) : rs.baseDy;
-    if (rec.dx !== rs.baseDx || rec.dy !== rs.baseDy) rec.moved = true;
-
-    rec.size = { w, h };
-    rec.resized = true;
-    applyRecord(rec);
-  }
-
-  // ---------- keyboard (Figma-style) ----------
-
-  private onKeyDown = (e: KeyboardEvent): void => {
-    // typing in the props panel (or toolbar) must not trigger page shortcuts:
-    // Backspace there edits a field, not the element
-    if (this.inOverlay(e)) return;
-
-    // while editing text, everything is native except Esc (= finish editing)
-    if (this.textEdit) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.commitTextEdit();
-      }
-      return;
-    }
-    const mod = e.metaKey || e.ctrlKey;
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (this.selected.length > 0) this.select([]);
-      else this.deactivate();
-      return;
-    }
-
-    // undo / redo work with or without a selection
-    if (mod && (e.key === 'z' || e.key === 'Z')) {
-      e.preventDefault();
-      e.stopPropagation();
-      const done = e.shiftKey ? this.history.redo() : this.history.undo();
-      if (done) this.overlay.toast(e.shiftKey ? '重做' : '撤销');
-      return;
-    }
-
-    if (this.selected.length === 0) return;
-
-    // Delete / Backspace removes the selection (recorded as one undoable batch)
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-      e.preventDefault();
-      e.stopPropagation();
-      const count = this.selected.length;
-      const items = this.selected.map((el) => {
-        const rec = this.history.ensure(el);
-        const before = this.history.snapshot(rec);
-        rec.deleted = true;
-        return { rec, before };
-      });
-      this.select([]);
-      this.history.commitBatch(items);
-      this.overlay.toast(count > 1 ? `已删除 ${count} 个元素（⌘Z 撤销）` : '已删除（⌘Z 撤销）');
-      return;
-    }
-
-    if (this.selected.length === 1) {
-      const el = this.selected[0];
-
-      // Enter drills into the first child, Shift+Enter back to the parent
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        e.stopPropagation();
-        const next = e.shiftKey ? el.parentElement : el.firstElementChild;
-        if (this.isSelectable(next)) this.select([next]);
-        return;
-      }
-
-      // Tab / Shift+Tab walks between siblings
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        e.stopPropagation();
-        const next = e.shiftKey ? el.previousElementSibling : el.nextElementSibling;
-        if (this.isSelectable(next)) this.select([next]);
-        return;
-      }
-    }
-
-    // arrow-key nudging (1px, Shift = 10px) moves the whole selection,
-    // coalesced on the undo stack
-    const step = e.shiftKey ? 10 : 1;
-    const nudge: Record<string, [number, number]> = {
-      ArrowLeft: [-step, 0],
-      ArrowRight: [step, 0],
-      ArrowUp: [0, -step],
-      ArrowDown: [0, step],
-    };
-    const delta = nudge[e.key];
-    if (!delta) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const items = this.selected.map((el) => {
-      const rec = this.history.ensure(el);
-      const before = this.history.snapshot(rec);
-      rec.dx += delta[0];
-      rec.dy += delta[1];
-      rec.moved = true;
-      return { rec, before };
-    });
-    this.history.commitBatch(items, { coalesce: 'nudge' });
-  };
 
   // ---------- properties panel ----------
 
   private panelSetProps(entries: Record<string, string | null>): void {
     if (this.selected.length !== 1) return;
     const el = this.selected[0];
-    this.commitTextEdit();
+    this.textEdit.commit();
     const rec = this.history.ensure(el);
     const before = this.history.snapshot(rec);
     for (const [prop, value] of Object.entries(entries)) {
@@ -622,7 +352,7 @@ export class Sidetation {
 
   private panelSetSize(w: number | null, h: number | null): void {
     if (this.selected.length !== 1) return;
-    this.commitTextEdit();
+    this.textEdit.commit();
     const rec = this.history.ensure(this.selected[0]);
     const before = this.history.snapshot(rec);
     if (w !== null) rec.size.w = Math.max(8, w);

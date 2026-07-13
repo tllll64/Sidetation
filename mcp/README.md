@@ -98,6 +98,8 @@ args = ["/绝对路径/Sidetation/mcp/server.mjs"]
 }
 ```
 
+> 在 CodeBuddy IDE 内置预览里拖拽改页面的端到端教程见 [docs/codebuddy.md](../docs/codebuddy.md)。
+
 ## 远程 / HTTP 客户端（WorkBuddy 等）
 
 不 spawn 本地进程、只连 URL 的客户端，直接指向 receiver 的 Streamable HTTP 端点：
