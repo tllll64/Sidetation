@@ -1,0 +1,50 @@
+{
+  "name": "sidetation-preview",
+  "displayName": "Sidetation 预览",
+  "description": "零配置预览并拖拽编辑本地前端项目：代理注入 Sidetation，无需改动项目代码。适用于 VS Code 与 CodeBuddy IDE。",
+  "version": "0.1.0",
+  "publisher": "sidetation",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/tllll64/Sidetation" },
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "main": "./dist/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      { "command": "sidetation.openPreview", "title": "Sidetation: 打开预览" }
+    ],
+    "configuration": {
+      "title": "Sidetation",
+      "properties": {
+        "sidetation.defaultTarget": {
+          "type": "string",
+          "default": "http://localhost:5173",
+          "description": "默认的 dev server 地址"
+        },
+        "sidetation.mcpEndpoint": {
+          "type": "string",
+          "default": "http://127.0.0.1:8787",
+          "description": "「同步 MCP」按钮指向的 receiver 端点"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "sync-umd": "node scripts/sync-umd.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run sync-umd && node esbuild.mjs",
+    "package": "npm run typecheck && npm run build && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.14",
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0"
+  }
+}

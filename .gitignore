@@ -3,3 +3,5 @@ dist/
 extension/sidetation.js
 generated/
 .DS_Store
+vscode-ext/media/
+*.vsix

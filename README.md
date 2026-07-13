@@ -21,6 +21,10 @@ if (import.meta.env.DEV) {
 }
 ```
 
+## 在 IDE 里零配置使用（VS Code / CodeBuddy IDE 扩展）
+
+装上 [`vscode-ext/`](vscode-ext/) 产出的 `.vsix`（CI 每次构建都会出包），命令面板执行「Sidetation: 打开预览」并填入 dev server 地址——扩展用内置代理把 Sidetation 注入页面，**项目一行代码都不用改**，Vite HMR 正常工作。详见 [vscode-ext/README.md](vscode-ext/README.md)。
+
 ## 在任意网站上测试
 
 **Chrome 插件（推荐给团队）**：`npm run build` 后，在 `chrome://extensions` 开启「开发者模式」→「加载已解压的扩展程序」→ 选择 `extension/` 目录。点工具栏图标即可在当前页开启/关闭编辑模式（带 ON 徽标），仅申请 `activeTab` 权限，不受页面 CSP 限制。
