@@ -88,6 +88,10 @@
       font-size: 13px;
       padding: 40px 0 60px;
     }
+    .banner .btn-primary {
+      width: 182px;
+      margin-right: -15px;
+    }
   </style>
 </head>
 <body>
@@ -141,7 +145,7 @@
 
   <script type="module">
     import { init } from '/src/index.ts';
-    window.sidetation = init();
+    window.sidetation = init({ enableMcpSync: true });
 
     // ?shot: auto-activate and select an element, for store screenshots
     if (location.search.includes('shot')) {
