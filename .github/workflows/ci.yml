@@ -25,6 +25,12 @@ jobs:
       # package:ext = typecheck + vite build + 生成注入产物 + 打包扩展 zip
       - run: npm run package:ext
 
+      # VS Code / CodeBuddy IDE 扩展（依赖上一步产出的 UMD）
+      - run: npm ci
+        working-directory: vscode-ext
+      - run: npm run package
+        working-directory: vscode-ext
+
       - uses: actions/upload-artifact@v4
         with:
           name: sidetation-dist
@@ -35,9 +41,14 @@ jobs:
           name: sidetation-extension
           path: dist/sidetation-extension.zip
 
-      # 推 v* tag 时自动建 Release 并附上扩展 zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sidetation-vscode-ext
+          path: vscode-ext/*.vsix
+
+      # 推 v* tag 时自动建 Release 并附上两种扩展安装包
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/sidetation-extension.zip --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/sidetation-extension.zip vscode-ext/*.vsix --generate-notes
